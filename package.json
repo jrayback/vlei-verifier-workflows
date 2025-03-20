@@ -1,6 +1,6 @@
 {
   "name": "@gleif-it/vlei-verifier-workflows",
-  "version": "0.0.6",
+  "version": "0.0.6-dev.3",
   "description": "Workflows for vLEI users and vLEI credentials for the vLEI-verifier service",
   "license": "Apache-2.0",
   "type": "module",
@@ -35,21 +35,8 @@
       }
     }
   },
-  "module": "./dist/esm/index.js",
+  "types": "./dist/cjs/types/index.d.ts",
   "main": "./dist/cjs/index.js",
-  "types": "./dist/esm/types/index.d.ts",
-  "typesVersions": {
-    "<=4.9": {
-      "*": [
-        "dist/cjs/types/*"
-      ]
-    },
-    ">=5.0": {
-      "*": [
-        "dist/esm/types/*"
-      ]
-    }
-  },
   "files": [
     "dist/**/*"
   ],
@@ -71,9 +58,10 @@
     "compatibility-checker": "./build/test/package/check-compatibility.sh",
     "package-checker": "npm pack --dry-run",
     "prepublishOnly": "npm run test:full",
-    "publish:dev": "npm version prerelease --preid=dev && npm publish --access public --tag dev && npm dist-tag add $(node -p \"require('./package.json').name + '@' + require('./package.json').version\") latest"
+    "publish:dev": "npm version prerelease --preid=dev && npm publish --access public --tag dev"
   },
   "dependencies": {
+    "@gleif-it/vlei-verifier-workflows": "^0.0.6-dev.3",
     "buffer": "^6.0.3",
     "js-yaml": "^4.1.0",
     "mathjs": "^12.4.0",
