@@ -2,7 +2,6 @@
 {
   "extends": "./build/configs/tsconfig.base.json",
   "compilerOptions": {
-    "esModuleInterop": true,
-    "downlevelIteration": true
+    "esModuleInterop": true
   }
 }

@@ -203,14 +203,14 @@ workflow:
       description: 'Adding Root of Trust'
     credential_verification_valid_verified:
       id: 'credential_verification_valid_verified'
-      type: 'vlei_verification'
-      description: 'Running Vlei Verification'
+      type: 'credential_verification'
+      presenter_aid: 'ecr-aid-1'
+      description: 'Running Credential Verification for ecr-aid-1'
+      credential: 'ecr_cred'
       actions:
-        present_credential:
-          credential: 'ecr_cred'
-          type: 'credential_presentation'
+        present:
+          type: 'presentation'
           expected_status: 'cred_crypt_valid'
-        authorize_credential:
-          aid: 'ecr-aid-1'
-          type: 'credential_authorization'
+        authorize:
+          type: 'authorization'
           expected_status: 'cred_verified'
