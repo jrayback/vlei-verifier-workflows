@@ -9,28 +9,28 @@ workflow:
       type: 'create_client'
       agent_name: 'gleif-agent-1'
       description: 'Creating client for GLEIF agent'
-    
+
     qvi_client:
       id: 'qvi_client'
       type: 'create_client'
       agent_name: 'qvi-agent-1'
       description: 'Creating client for QVI agent'
       depends: ['gleif_client']
-    
+
     le_client:
       id: 'le_client'
       type: 'create_client'
       agent_name: 'le-agent-1'
       description: 'Creating client for LE agent'
       depends: ['qvi_client']
-    
+
     ecr_client:
       id: 'ecr_client'
       type: 'create_client'
       agent_name: 'ecr-agent-1'
       description: 'Creating client for ECR agent'
       depends: ['le_client']
-    
+
     # AID creation steps
     gleif_aid:
       id: 'gleif_aid'
@@ -38,28 +38,28 @@ workflow:
       aid: 'gleif-aid-1'
       description: 'Creating AID: gleif-aid-1'
       depends: ['gleif_client']
-    
+
     qvi_aid:
       id: 'qvi_aid'
       type: 'create_aid'
       aid: 'qvi-aid-1'
       description: 'Creating AID: qvi-aid-1'
       depends: ['qvi_client', 'gleif_aid']
-    
+
     le_aid:
       id: 'le_aid'
       type: 'create_aid'
       aid: 'le-aid-1'
       description: 'Creating AID: le-aid-1'
       depends: ['le_client', 'qvi_aid']
-    
+
     ecr_aid:
       id: 'ecr_aid'
       type: 'create_aid'
       aid: 'ecr-aid-1'
       description: 'Creating AID: ecr-aid-1'
       depends: ['ecr_client', 'le_aid']
-    
+
     # Registry creation steps
     gleif_registry:
       id: 'gleif_registry'
@@ -67,28 +67,28 @@ workflow:
       aid: 'gleif-aid-1'
       description: 'Creating registry for gleif-aid-1'
       depends: ['gleif_aid']
-    
+
     qvi_registry:
       id: 'qvi_registry'
       type: 'create_registry'
       aid: 'qvi-aid-1'
       description: 'Creating registry for qvi-aid-1'
       depends: ['qvi_aid']
-    
+
     le_registry:
       id: 'le_registry'
       type: 'create_registry'
       aid: 'le-aid-1'
       description: 'Creating registry for le-aid-1'
       depends: ['le_aid']
-    
+
     ecr_registry:
       id: 'ecr_registry'
       type: 'create_registry'
       aid: 'ecr-aid-1'
       description: 'Creating registry for ecr-aid-1'
       depends: ['ecr_aid']
-    
+
     # Root of Trust setup
     add_root_of_trust:
       id: 'add_root_of_trust'
@@ -96,7 +96,7 @@ workflow:
       rot_aid: 'gleif-aid-1'
       description: 'Adding GLEIF as Root of Trust'
       depends: ['gleif_registry']
-    
+
     # Credential issuance steps
     qvi_cred:
       id: 'qvi_cred'
@@ -108,7 +108,7 @@ workflow:
       description: 'GLEIF issues QVI vLEI credential'
       credential: 'gleif_to_qvi_vlei_cred'
       depends: ['add_root_of_trust', 'qvi_registry']
-    
+
     le_cred:
       id: 'le_cred'
       type: 'issue_credential'
@@ -120,7 +120,7 @@ workflow:
       credential: 'qvi_to_le_vlei_cred'
       credential_source: 'qvi_cred'
       depends: ['qvi_cred', 'le_registry']
-    
+
     # First credential to ECR-AID-1
     ecr_birth_doula:
       id: 'ecr_birth_doula'
@@ -134,7 +134,7 @@ workflow:
       credential: 'le_to_ecr_birth_doula'
       credential_source: 'le_cred'
       depends: ['le_cred', 'ecr_registry']
-    
+
     # Verify first credential
     verify_birth_doula:
       id: 'verify_birth_doula'
@@ -150,7 +150,7 @@ workflow:
           type: 'authorization'
           expected_status: 'cred_verified'
       depends: ['ecr_birth_doula']
-    
+
     # Second credential to ECR-AID-1 - same recipient, different credential
     ecr_postpartum_doula:
       id: 'ecr_postpartum_doula'
@@ -164,7 +164,7 @@ workflow:
       credential: 'le_to_ecr_postpartum_doula'
       credential_source: 'le_cred'
       depends: ['verify_birth_doula']
-    
+
     # Verify second credential
     verify_postpartum_doula:
       id: 'verify_postpartum_doula'
@@ -180,7 +180,7 @@ workflow:
           type: 'authorization'
           expected_status: 'cred_verified'
       depends: ['ecr_postpartum_doula']
-    
+
     # Third credential to ECR-AID-1 - same recipient, different credential
     ecr_childbirth_educator:
       id: 'ecr_childbirth_educator'
@@ -194,7 +194,7 @@ workflow:
       credential: 'le_to_ecr_childbirth_educator'
       credential_source: 'le_cred'
       depends: ['verify_postpartum_doula']
-    
+
     # Verify third credential
     verify_childbirth_educator:
       id: 'verify_childbirth_educator'

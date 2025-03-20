@@ -168,7 +168,7 @@ export async function getIssuedCredentialByRole(
       '-a-i': recipientAID.prefix,
     },
   });
-  
+
   // If no credentials found, return null
   if (!credentials || credentials.length === 0) {
     return null;
@@ -177,14 +177,16 @@ export async function getIssuedCredentialByRole(
   console.log(`Looking for role: "${role}"`);
   console.log(`Found ${credentials.length} credentials with roles:`);
   credentials.forEach((cred, index) => {
-    console.log(`  ${index + 1}. Role: "${cred.sad.a.engagementContextRole}" | SAID: ${cred.sad.d}`);
+    console.log(
+      `  ${index + 1}. Role: "${cred.sad.a.engagementContextRole}" | SAID: ${cred.sad.d}`
+    );
   });
-  
+
   // Find the credential with the matching role
   const matchingCred = credentials.find(
     (cred) => cred.sad.a.engagementContextRole === role
   );
-  
+
   return matchingCred || null;
 }
 
