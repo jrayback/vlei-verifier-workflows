@@ -792,10 +792,12 @@ export const VleiIssuance = {
       console.log(
         `Found existing credential with role "${role}" and SAID: ${existingCred.sad.d}`
       );
-      workflow_state.credentials.set(credId, existingCred);
       const credCesr = await recipientclient!
         .credentials()
         .get(existingCred.sad.d, true);
+      
+      // Store with consistent structure
+      workflow_state.credentials.set(credId, { cred: existingCred, credCesr: credCesr });
 
       if (generateTestData) {
         const credData = { ...credInfo.attributes, ...attributes };
@@ -819,11 +821,13 @@ export const VleiIssuance = {
       return [response, role];
     }
 
-    // If no existing credential found, create a new one
+    // If credential with this role does not exist, create it
     let credSource = null;
     if (credSourceId != null) {
       const credType = credInfo.credSource['type'];
-      const issuerCred = workflow_state.credentials.get(credSourceId);
+      const credential: { cred: any; credCesr: string } =
+        workflow_state.credentials.get(credSourceId)!;
+      const issuerCred = credential.cred;
       const credO = credInfo.credSource['o'] || null;
       credSource = VleiIssuance.buildCredSource(credType, issuerCred, credO);
     }
@@ -831,7 +835,6 @@ export const VleiIssuance = {
       attributes.AID = workflow_state.aids.get(attributes['AID']).prefix;
     }
     const credData = { ...credInfo.attributes, ...attributes };
-
     const cred = await getOrIssueCredential(
       issuerclient!,
       issuerAID,
@@ -862,8 +865,9 @@ export const VleiIssuance = {
     assert.equal(credHolder.sad.a.i, recipientAID.prefix);
     assert.equal(credHolder.status.s, '0');
     assert(credHolder.atc !== undefined);
-    workflow_state.credentials.set(credId, cred);
     const credCesr = await recipientclient!.credentials().get(cred.sad.d, true);
+    workflow_state.credentials.set(credId, { cred: cred, credCesr: credCesr });
+
     if (generateTestData) {
       const tmpCred = cred;
       const testData: EcrTestData = {
@@ -906,40 +910,39 @@ export const VleiIssuance = {
     const schema = workflow_state.schemas[credInfo.schema];
     let rules = workflow_state.rules[credInfo.rules!];
     const privacy = credInfo.privacy;
-
-    // Extract the role from the credential info or attributes
-    const role =
-      credInfo.attributes?.engagementContextRole ||
-      attributes?.engagementContextRole;
-
-    // Get the first issuer AID for initial check
-    const firstIssuerAid = issuerAidInfo.identifiers[0];
-    const firstIssuerSinglesigData = workflow_state.aidsInfo.get(
-      firstIssuerAid
-    ) as SinglesigIdentifierData;
-    const firstIssuerClient = workflow_state.clients.get(
-      firstIssuerSinglesigData.agent.name
-    );
-
-    // Check for an existing credential with this specific role
-    const existingCred = await getIssuedCredentialByRole(
-      firstIssuerClient!,
-      issuerAIDMultisig,
-      recipientAID,
-      schema,
-      role
-    );
-
-    // If credential with this role already exists, use it
-    if (existingCred) {
-      console.log(
-        `Found existing multisig credential with role "${role}" and SAID: ${existingCred.sad.d}`
+        // Extract the role from the credential info or attributes
+        const role =
+        credInfo.attributes?.engagementContextRole ||
+        attributes?.engagementContextRole;
+  
+      // Get the first issuer AID for initial check
+      const firstIssuerAid = issuerAidInfo.identifiers[0];
+      const firstIssuerSinglesigData = workflow_state.aidsInfo.get(
+        firstIssuerAid
+      ) as SinglesigIdentifierData;
+      const firstIssuerClient = workflow_state.clients.get(
+        firstIssuerSinglesigData.agent.name
       );
-      workflow_state.credentials.set(credId, existingCred);
-      return [existingCred, null];
-    }
-
-    // If no credential exists, continue with credential issuance
+  
+      // Check for an existing credential with this specific role
+      const existingCred = await getIssuedCredentialByRole(
+        firstIssuerClient!,
+        issuerAIDMultisig,
+        recipientAID,
+        schema,
+        role
+      );
+  
+      // If credential with this role already exists, use it
+      if (existingCred) {
+        console.log(
+          `Found existing multisig credential with role "${role}" and SAID: ${existingCred.sad.d}`
+        );
+        workflow_state.credentials.set(credId, existingCred);
+        return [existingCred, null];
+      }
+  
+      // If no credential exists, continue with credential issuance
     const registryName = issuerAidInfo.name;
     const issuerRegistry = workflow_state.registries.get(registryName)!;
     const issuerAids =
@@ -961,7 +964,9 @@ export const VleiIssuance = {
     let credSource = null;
     if (credSourceId != null) {
       const credType = credInfo.credSource['type'];
-      const issuerCred = workflow_state.credentials.get(credSourceId);
+      const credential: { cred: any; credCesr: string } =
+        workflow_state.credentials.get(credSourceId)!;
+      const issuerCred = credential.cred;
       const credO = credInfo.credSource['o'] || null;
       credSource = VleiIssuance.buildCredSource(credType, issuerCred, credO);
       credSource = credSource ? { e: credSource } : undefined;
@@ -1089,6 +1094,7 @@ export const VleiIssuance = {
 
     // Exchange grant and admit messages.
     // Check if the recipient is a singlesig AID
+    let credCesr;
     if (recipientAidInfo.type === 'multisig') {
       let credsReceived = await Promise.all(
         recepientAids.map((aid: any) => {
@@ -1163,14 +1169,17 @@ export const VleiIssuance = {
           assert.equal(cred.sad.d, credReceived.sad.d);
         }
       }
+      const singlesigData = workflow_state.aidsInfo.get(
+        recepientAids[0].name
+      ) as SinglesigIdentifierData;
+      const client = workflow_state.clients.get(singlesigData.agent.name);
+      credCesr = await client!.credentials().get(cred.sad.d, true);
     } else {
       const singlesigData = workflow_state.aidsInfo.get(
         recepientAids[0]!.name
       ) as SinglesigIdentifierData;
-      let credReceived = await getReceivedCredential(
-        workflow_state.clients.get(singlesigData.agent.name)!,
-        cred.sad.d
-      );
+      const client = workflow_state.clients.get(singlesigData.agent.name);
+      let credReceived = await getReceivedCredential(client!, cred.sad.d);
       if (!credReceived) {
         await admitSinglesig(
           workflow_state.clients.get(singlesigData.agent.name)!,
@@ -1194,12 +1203,13 @@ export const VleiIssuance = {
         );
       }
       assert.equal(cred.sad.d, credReceived.sad.d);
+      credCesr = await client!.credentials().get(cred.sad.d, true);
     }
     console.log(
       `${issuerAIDMultisig.name} has issued a ${recipientAID.name} vLEI credential with SAID:`,
       cred.sad.d
     );
-    workflow_state.credentials.set(credId, cred);
+    workflow_state.credentials.set(credId, { cred: cred, credCesr: credCesr });
     return [cred, null];
   },
 
@@ -1211,7 +1221,9 @@ export const VleiIssuance = {
     testName = 'default_test'
   ) => {
     const workflow_state = WorkflowState.getInstance();
-    const cred: any = workflow_state.credentials.get(credId)!;
+    const credential: { cred: any; credCesr: string } =
+      workflow_state.credentials.get(credId)!;
+    const cred = credential.cred;
     const issuerAID = workflow_state.aids.get(issuerAidKey);
     const recipientAID = workflow_state.aids.get(issueeAidKey);
     const issuerAIDInfo = workflow_state.aidsInfo.get(
@@ -1223,15 +1235,15 @@ export const VleiIssuance = {
     const recipientclient = workflow_state.clients.get(
       recipientAIDInfo.agent.name
     );
-    const issuerclient = workflow_state.clients.get(issuerAIDInfo.agent.name);
+    const issuerClient = workflow_state.clients.get(issuerAIDInfo.agent.name);
 
     const revCred = await revokeCredential(
-      issuerclient!,
+      issuerClient!,
       issuerAID,
       cred.sad.d
     );
-    workflow_state.credentials.set(credId, revCred);
-    const credCesr = await issuerclient!.credentials().get(revCred.sad.d, true);
+    const credCesr = await issuerClient!.credentials().get(revCred.sad.d, true);
+    workflow_state.credentials.set(credId, { cred: cred, credCesr: credCesr });
     if (generateTestData) {
       const tmpCred = revCred;
       const testData: EcrTestData = {
@@ -1262,7 +1274,9 @@ export const VleiIssuance = {
   ) => {
     const workflow_state = WorkflowState.getInstance();
     const recipientAID = workflow_state.aids.get(issueeAidKey);
-    const cred: any = workflow_state.credentials.get(credId)!;
+    const credential: { cred: any; credCesr: string } =
+      workflow_state.credentials.get(credId)!;
+    const cred = credential.cred;
     const issuerAidInfo = workflow_state.aidsInfo.get(
       issuerAidKey
     )! as MultisigIdentifierData;
@@ -1271,7 +1285,7 @@ export const VleiIssuance = {
       issuerAidInfo.identifiers.map((identifier: any) =>
         workflow_state.aids.get(identifier)
       ) || [];
-    let issuerclient!: any;
+    let issuerClient!: any;
     const revOps = [];
     let i = 0;
     const REVTIME = new Date().toISOString().replace('Z', '000+00:00');
@@ -1279,23 +1293,23 @@ export const VleiIssuance = {
       const aidInfo = workflow_state.aidsInfo.get(
         issuerAid.name
       )! as SinglesigIdentifierData;
-      issuerclient = workflow_state.clients.get(aidInfo.agent.name);
+      issuerClient = workflow_state.clients.get(aidInfo.agent.name);
       if (i != 0) {
         const msgSaid = await waitAndMarkNotification(
-          issuerclient!,
+          issuerClient!,
           '/multisig/rev'
         );
         console.log(
           `Multisig AID ${issuerAid.name} received exchange message to join the credential revocation event`
         );
-        await issuerclient!.groups().getRequest(msgSaid);
+        await issuerClient!.groups().getRequest(msgSaid);
       }
-      const revResult = await issuerclient!
+      const revResult = await issuerClient!
         .credentials()
         .revoke(issuerAIDMultisig.name, cred.sad.d, REVTIME);
-      revOps.push([issuerclient!, revResult.op]);
+      revOps.push([issuerClient!, revResult.op]);
       await multisigRevoke(
-        issuerclient!,
+        issuerClient!,
         issuerAid.name,
         issuerAIDMultisig.name,
         revResult.rev,
@@ -1307,11 +1321,15 @@ export const VleiIssuance = {
     for (const [client, op] of revOps) {
       await waitOperation(client!, op);
     }
-    const revCred = await issuerclient!.credentials().get(cred.sad.d);
-    workflow_state.credentials.set(credId, revCred);
+    const revCred = await issuerClient!.credentials().get(cred.sad.d);
+    const credCesr = await issuerClient!.credentials().get(revCred.sad.d, true);
+    workflow_state.credentials.set(credId, {
+      cred: revCred,
+      credCesr: credCesr,
+    });
     if (generateTestData) {
       const tmpCred = revCred;
-      const credCesr = await issuerclient!
+      const credCesr = await issuerClient!
         .credentials()
         .get(revCred.sad.d, true);
       const testData: EcrTestData = {
@@ -1332,7 +1350,9 @@ export const VleiIssuance = {
     issueeAidKey: string
   ) => {
     const workflow_state = WorkflowState.getInstance();
-    const cred: any = workflow_state.credentials.get(credId)!;
+    const credential: { cred: any; credCesr: string } =
+      workflow_state.credentials.get(credId)!;
+    const cred = credential.cred;
 
     if (!cred) {
       console.log(

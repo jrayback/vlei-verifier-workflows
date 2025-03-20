@@ -135,23 +135,23 @@ workflow:
       credential_source: 'le_cred'
       depends: ['le_cred', 'ecr_registry']
 
-    # Verify first credential
+    # Replace credential_verification with vlei_verification for first credential
     verify_birth_doula:
       id: 'verify_birth_doula'
-      type: 'credential_verification'
-      presenter_aid: 'ecr-aid-1'
+      type: 'vlei_verification'
       description: 'Verifying Birth Doula credential for ecr-aid-1'
-      credential: 'ecr_birth_doula'
       actions:
         present:
-          type: 'presentation'
+          credential: 'ecr_birth_doula'
+          type: 'credential_presentation'
           expected_status: 'cred_crypt_valid'
         authorize:
-          type: 'authorization'
+          aid: 'ecr-aid-1'
+          type: 'credential_authorization'
           expected_status: 'cred_verified'
       depends: ['ecr_birth_doula']
 
-    # Second credential to ECR-AID-1 - same recipient, different credential
+    # Second credential to ECR-AID-1
     ecr_postpartum_doula:
       id: 'ecr_postpartum_doula'
       type: 'issue_credential'
@@ -165,23 +165,23 @@ workflow:
       credential_source: 'le_cred'
       depends: ['verify_birth_doula']
 
-    # Verify second credential
+    # Replace credential_verification with vlei_verification for second credential
     verify_postpartum_doula:
       id: 'verify_postpartum_doula'
-      type: 'credential_verification'
-      presenter_aid: 'ecr-aid-1'
+      type: 'vlei_verification'
       description: 'Verifying Postpartum Doula credential for ecr-aid-1'
-      credential: 'ecr_postpartum_doula'
       actions:
         present:
-          type: 'presentation'
+          credential: 'ecr_postpartum_doula'
+          type: 'credential_presentation'
           expected_status: 'cred_crypt_valid'
         authorize:
-          type: 'authorization'
+          aid: 'ecr-aid-1'
+          type: 'credential_authorization'
           expected_status: 'cred_verified'
       depends: ['ecr_postpartum_doula']
 
-    # Third credential to ECR-AID-1 - same recipient, different credential
+    # Third credential to ECR-AID-1
     ecr_childbirth_educator:
       id: 'ecr_childbirth_educator'
       type: 'issue_credential'
@@ -195,18 +195,18 @@ workflow:
       credential_source: 'le_cred'
       depends: ['verify_postpartum_doula']
 
-    # Verify third credential
+    # Replace credential_verification with vlei_verification for third credential
     verify_childbirth_educator:
       id: 'verify_childbirth_educator'
-      type: 'credential_verification'
-      presenter_aid: 'ecr-aid-1'
+      type: 'vlei_verification'
       description: 'Verifying Childbirth Educator credential for ecr-aid-1'
-      credential: 'ecr_childbirth_educator'
       actions:
         present:
-          type: 'presentation'
+          credential: 'ecr_childbirth_educator'
+          type: 'credential_presentation'
           expected_status: 'cred_crypt_valid'
         authorize:
-          type: 'authorization'
+          aid: 'ecr-aid-1'
+          type: 'credential_authorization'
           expected_status: 'cred_verified'
       depends: ['ecr_childbirth_educator']
