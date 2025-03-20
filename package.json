@@ -61,7 +61,6 @@
     "publish:dev": "npm version prerelease --preid=dev && npm publish --access public --tag dev"
   },
   "dependencies": {
-    "@gleif-it/vlei-verifier-workflows": "^0.0.6-dev.3",
     "buffer": "^6.0.3",
     "js-yaml": "^4.1.0",
     "mathjs": "^12.4.0",
