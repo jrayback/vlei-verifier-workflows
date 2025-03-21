@@ -168,7 +168,9 @@ export class VleiVerificationStepRunner extends StepRunner {
           }
           cred = credential.cred;
           if (!cred || !cred.sad || !cred.sad.d) {
-            throw new Error(`Invalid credential format for: ${action.credential}`);
+            throw new Error(
+              `Invalid credential format for: ${action.credential}`
+            );
           }
           credCesr =
             client !== undefined
@@ -181,13 +183,17 @@ export class VleiVerificationStepRunner extends StepRunner {
           }
           cred = credential.cred;
           if (!cred || !cred.sad || !cred.sad.d) {
-            throw new Error(`Invalid credential format for: ${action.credential}`);
+            throw new Error(
+              `Invalid credential format for: ${action.credential}`
+            );
           }
           credCesr = credential.credCesr;
         }
-        
+
         if (!credCesr) {
-          throw new Error(`Credential CESR data not found for: ${action.credential}`);
+          throw new Error(
+            `Credential CESR data not found for: ${action.credential}`
+          );
         }
 
         //console.log('Credential retrieved:', JSON.stringify(credential, null, 2));
