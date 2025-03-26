@@ -22,7 +22,7 @@
       "privacy": false,
       "attributes": {}
     },
-    "le_to_ecr_birth_doula": {
+    "le_to_ecr_role1": {
       "credSource": {
         "type": "le"
       },
@@ -31,10 +31,10 @@
       "rules": "ECR_RULES",
       "privacy": true,
       "attributes": {
-        "engagementContextRole": "Birth Certified Doula"
+        "engagementContextRole": "Employee Role 1"
       }
     },
-    "le_to_ecr_postpartum_doula": {
+    "le_to_ecr_role2": {
       "credSource": {
         "type": "le"
       },
@@ -43,10 +43,10 @@
       "rules": "ECR_RULES",
       "privacy": true,
       "attributes": {
-        "engagementContextRole": "Postpartum Certified Doula"
+        "engagementContextRole": "Employee Role 2"
       }
     },
-    "le_to_ecr_childbirth_educator": {
+    "le_to_ecr_role3": {
       "credSource": {
         "type": "le"
       },
@@ -55,7 +55,7 @@
       "rules": "ECR_RULES",
       "privacy": true,
       "attributes": {
-        "engagementContextRole": "Childbirth Educator"
+        "engagementContextRole": "Employee Role 3"
       }
     }
   },

@@ -197,7 +197,7 @@ export class VleiVerificationStepRunner extends StepRunner {
         }
 
         //console.log('Credential retrieved:', JSON.stringify(credential, null, 2));
-        console.log('Credential cred property:', JSON.stringify(cred, null, 2));
+        //console.log('Credential cred property:', JSON.stringify(cred, null, 2));
 
         const credStatus = presentationStatusMapping.get(
           action.expected_status

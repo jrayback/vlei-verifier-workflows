@@ -137,22 +137,49 @@ export async function getIssuedCredential(
   issuerClient: SignifyClient.SignifyClient,
   issuerAID: SignifyClient.HabState,
   recipientAID: SignifyClient.HabState,
-  schemaSAID: string
+  schemaSAID: string,
+  role?: string
 ) {
-  const credentialList = await issuerClient.credentials().list({
+  // Get all credentials matching the basic criteria
+  const credentials = await issuerClient.credentials().list({
     filter: {
       '-i': issuerAID.prefix,
       '-s': schemaSAID,
       '-a-i': recipientAID.prefix,
     },
   });
-  assert(credentialList.length <= 1);
-  return credentialList[0];
+
+  // If no credentials found, return null
+  if (!credentials || credentials.length === 0) {
+    return null;
+  }
+
+  console.log(`Looking for role: "${role}"`);
+  console.log(`Found ${credentials.length} credentials with roles:`);
+
+  // Filter and display credentials with their role type
+  credentials.forEach((cred, index) => {
+    const roleName =
+      cred.sad.a.engagementContextRole ||
+      cred.sad.a.officialRole ||
+      'undefined';
+    console.log(`  ${index + 1}. Role: "${roleName}" | SAID: ${cred.sad.d}`);
+  });
+
+  // Find the credential matching the requested role (checking both role types)
+  const matchingCred = credentials.find(
+    (cred) =>
+      role === undefined ||
+      cred.sad.a.engagementContextRole === role ||
+      cred.sad.a.officialRole === role
+  );
+
+  return matchingCred || null;
 }
+
 /**
  * Get issued credential with specific role
  * This extends the default credential retrieval to filter by role
- */
 export async function getIssuedCredentialByRole(
   client: SignifyClient.SignifyClient,
   issuerAID: any,
@@ -176,19 +203,25 @@ export async function getIssuedCredentialByRole(
 
   console.log(`Looking for role: "${role}"`);
   console.log(`Found ${credentials.length} credentials with roles:`);
+  
+  // Filter and display credentials with their role type
   credentials.forEach((cred, index) => {
+    const roleName = cred.sad.a.engagementContextRole || cred.sad.a.officialRole || "undefined";
     console.log(
-      `  ${index + 1}. Role: "${cred.sad.a.engagementContextRole}" | SAID: ${cred.sad.d}`
+      `  ${index + 1}. Role: "${roleName}" | SAID: ${cred.sad.d}`
     );
   });
 
-  // Find the credential with the matching role
+  // Find the credential matching the requested role (checking both role types)
   const matchingCred = credentials.find(
-    (cred) => cred.sad.a.engagementContextRole === role
+    (cred) => 
+      (cred.sad.a.engagementContextRole === role) || 
+      (cred.sad.a.officialRole === role)
   );
 
   return matchingCred || null;
 }
+  */
 
 export async function getOrCreateAID(
   client: SignifyClient.SignifyClient,

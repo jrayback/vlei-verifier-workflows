@@ -21,7 +21,6 @@ import {
   assertOperations,
   sleep,
   revokeCredential,
-  getIssuedCredentialByRole,
 } from './utils/test-util.js';
 import {
   addEndRoleMultisig,
@@ -776,10 +775,11 @@ export const VleiIssuance = {
     // Extract the role from the credential info or attributes
     const role =
       credInfo.attributes?.engagementContextRole ||
-      attributes?.engagementContextRole;
+      attributes?.engagementContextRole ||
+      credInfo.attributes?.officialRole ||
+      attributes?.officialRole;
 
-    // Check for an existing credential with this specific role
-    const existingCred = await getIssuedCredentialByRole(
+    const existingCred = await getIssuedCredential(
       issuerclient!,
       issuerAID,
       recipientAID,
@@ -913,10 +913,13 @@ export const VleiIssuance = {
     const schema = workflow_state.schemas[credInfo.schema];
     let rules = workflow_state.rules[credInfo.rules!];
     const privacy = credInfo.privacy;
+
     // Extract the role from the credential info or attributes
     const role =
       credInfo.attributes?.engagementContextRole ||
-      attributes?.engagementContextRole;
+      attributes?.engagementContextRole ||
+      credInfo.attributes?.officialRole ||
+      attributes?.officialRole;
 
     // Get the first issuer AID for initial check
     const firstIssuerAid = issuerAidInfo.identifiers[0];
@@ -927,8 +930,7 @@ export const VleiIssuance = {
       firstIssuerSinglesigData.agent.name
     );
 
-    // Check for an existing credential with this specific role
-    const existingCred = await getIssuedCredentialByRole(
+    const existingCred = await getIssuedCredential(
       firstIssuerClient!,
       issuerAIDMultisig,
       recipientAID,

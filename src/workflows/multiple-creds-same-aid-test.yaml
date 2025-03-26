@@ -122,91 +122,91 @@ workflow:
       depends: ['qvi_cred', 'le_registry']
 
     # First credential to ECR-AID-1
-    ecr_birth_doula:
-      id: 'ecr_birth_doula'
+    ecr_role1:
+      id: 'ecr_role1'
       type: 'issue_credential'
       attributes:
-        personLegalName: 'Doula User'
+        personLegalName: 'Employee User'
         LEI: '875500ELOZEL05BVXV37'
       issuer_aid: 'le-aid-1'
       issuee_aid: 'ecr-aid-1'
-      description: 'LE issues Birth Certified Doula credential to ECR'
-      credential: 'le_to_ecr_birth_doula'
+      description: 'LE issues Employee Role 1 credential to ECR'
+      credential: 'le_to_ecr_role1'
       credential_source: 'le_cred'
       depends: ['le_cred', 'ecr_registry']
 
-    # Replace credential_verification with vlei_verification for first credential
-    verify_birth_doula:
-      id: 'verify_birth_doula'
+    # Verify first credential
+    verify_role1:
+      id: 'verify_role1'
       type: 'vlei_verification'
-      description: 'Verifying Birth Doula credential for ecr-aid-1'
+      description: 'Verifying Employee Role 1 credential for ecr-aid-1'
       actions:
         present:
-          credential: 'ecr_birth_doula'
+          credential: 'ecr_role1'
           type: 'credential_presentation'
           expected_status: 'cred_crypt_valid'
         authorize:
           aid: 'ecr-aid-1'
           type: 'credential_authorization'
           expected_status: 'cred_verified'
-      depends: ['ecr_birth_doula']
+      depends: ['ecr_role1']
 
     # Second credential to ECR-AID-1
-    ecr_postpartum_doula:
-      id: 'ecr_postpartum_doula'
+    ecr_role2:
+      id: 'ecr_role2'
       type: 'issue_credential'
       attributes:
-        personLegalName: 'Doula User'
+        personLegalName: 'Employee User'
         LEI: '875500ELOZEL05BVXV37'
       issuer_aid: 'le-aid-1'
       issuee_aid: 'ecr-aid-1'
-      description: 'LE issues Postpartum Certified Doula credential to ECR'
-      credential: 'le_to_ecr_postpartum_doula'
+      description: 'LE issues Employee Role 2 credential to ECR'
+      credential: 'le_to_ecr_role2'
       credential_source: 'le_cred'
-      depends: ['verify_birth_doula']
+      depends: ['verify_role1']
 
-    # Replace credential_verification with vlei_verification for second credential
-    verify_postpartum_doula:
-      id: 'verify_postpartum_doula'
+    # Verify second credential
+    verify_role2:
+      id: 'verify_role2'
       type: 'vlei_verification'
-      description: 'Verifying Postpartum Doula credential for ecr-aid-1'
+      description: 'Verifying Employee Role 2 credential for ecr-aid-1'
       actions:
         present:
-          credential: 'ecr_postpartum_doula'
+          credential: 'ecr_role2'
           type: 'credential_presentation'
           expected_status: 'cred_crypt_valid'
         authorize:
           aid: 'ecr-aid-1'
           type: 'credential_authorization'
           expected_status: 'cred_verified'
-      depends: ['ecr_postpartum_doula']
+      depends: ['ecr_role2']
 
     # Third credential to ECR-AID-1
-    ecr_childbirth_educator:
-      id: 'ecr_childbirth_educator'
+    ecr_role3:
+      id: 'ecr_role3'
       type: 'issue_credential'
       attributes:
-        personLegalName: 'Doula User'
+        personLegalName: 'Employee User'
         LEI: '875500ELOZEL05BVXV37'
       issuer_aid: 'le-aid-1'
       issuee_aid: 'ecr-aid-1'
-      description: 'LE issues Childbirth Educator credential to ECR'
-      credential: 'le_to_ecr_childbirth_educator'
+      description: 'LE issues Employee Role 3 credential to ECR'
+      credential: 'le_to_ecr_role3'
       credential_source: 'le_cred'
-      depends: ['verify_postpartum_doula']
+      depends: ['verify_role2']
 
-    # Replace credential_verification with vlei_verification for third credential
-    verify_childbirth_educator:
-      id: 'verify_childbirth_educator'
+    # Verify third credential
+    verify_role3:
+      id: 'verify_role3'
       type: 'vlei_verification'
-      description: 'Verifying Childbirth Educator credential for ecr-aid-1'
+      description: 'Verifying Employee Role 3 credential for ecr-aid-1'
       actions:
         present:
-          credential: 'ecr_childbirth_educator'
+          credential: 'ecr_role3'
           type: 'credential_presentation'
           expected_status: 'cred_crypt_valid'
         authorize:
           aid: 'ecr-aid-1'
           type: 'credential_authorization'
           expected_status: 'cred_verified'
-      depends: ['ecr_childbirth_educator']
+      depends: ['ecr_role3']
