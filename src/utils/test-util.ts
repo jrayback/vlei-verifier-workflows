@@ -8,6 +8,12 @@ import {
   getIdentifierData,
   SinglesigIdentifierData,
 } from './handle-json-config.js';
+import {
+  ECR_SCHEMA_URL,
+  OOR_SCHEMA_URL,
+  ECR_SCHEMA_SAID,
+  OOR_SCHEMA_SAID,
+} from '../constants.js';
 
 export interface Aid {
   name: string;
@@ -140,88 +146,86 @@ export async function getIssuedCredential(
   schemaSAID: string,
   role?: string
 ) {
-  // Get all credentials matching the basic criteria
-  const credentials = await issuerClient.credentials().list({
-    filter: {
-      '-i': issuerAID.prefix,
-      '-s': schemaSAID,
-      '-a-i': recipientAID.prefix,
-    },
-  });
+  // Build the base filter
+  const filter = {
+    '-i': issuerAID.prefix,
+    '-s': schemaSAID,
+    '-a-i': recipientAID.prefix,
+  };
+
+  // If role is provided, determine which role attribute to use based on schema
+  if (role !== undefined) {
+    console.log(`Looking for credentials with specific role: ${role}`);
+
+    // Determine role type based on schema
+    let roleAttribute;
+    // Check if the schema is ECR_SCHEMA_SAID or contains "ECR"
+    if (schemaSAID === ECR_SCHEMA_SAID || schemaSAID.includes('ECR')) {
+      roleAttribute = '-a-engagementContextRole';
+    }
+    // Check if the schema is OOR_SCHEMA_SAID or contains "OOR"
+    else if (schemaSAID === OOR_SCHEMA_SAID || schemaSAID.includes('OOR')) {
+      roleAttribute = '-a-officialRole';
+    }
+
+    // If we identified a role attribute, add it to the filter
+    if (roleAttribute) {
+      try {
+        const roleFilter = {
+          ...filter,
+          [roleAttribute]: role,
+        };
+
+        console.log(`Trying with schema-specific role filter:`, roleFilter);
+        const credentials = await issuerClient
+          .credentials()
+          .list({ filter: roleFilter });
+
+        if (credentials && credentials.length > 0) {
+          console.log(
+            `Found ${credentials.length} matching credentials with specific role`
+          );
+          return credentials[0];
+        }
+      } catch (e) {
+        console.log(`Error querying by specific role:`, e);
+      }
+    }
+  }
+
+  // If specific role search failed or no role was specified, use the base filter
+  console.log(`Looking for credentials with base filter:`, filter);
+  const credentials = await issuerClient.credentials().list({ filter });
 
   // If no credentials found, return null
   if (!credentials || credentials.length === 0) {
+    console.log(`No credentials found matching filter`);
     return null;
   }
 
-  console.log(`Looking for role: "${role}"`);
-  console.log(`Found ${credentials.length} credentials with roles:`);
+  // Log the found credentials
+  console.log(`Found ${credentials.length} matching credentials:`);
 
-  // Filter and display credentials with their role type
-  credentials.forEach((cred, index) => {
-    const roleName =
-      cred.sad.a.engagementContextRole ||
-      cred.sad.a.officialRole ||
-      'undefined';
-    console.log(`  ${index + 1}. Role: "${roleName}" | SAID: ${cred.sad.d}`);
-  });
+  // If a role was specified and we couldn't use direct filtering, filter client-side
+  if (role !== undefined) {
+    for (const cred of credentials) {
+      const credRole =
+        cred.sad.a.engagementContextRole || cred.sad.a.officialRole;
+      console.log(`Credential role: "${credRole}" | SAID: ${cred.sad.d}`);
 
-  // Find the credential matching the requested role (checking both role types)
-  const matchingCred = credentials.find(
-    (cred) =>
-      role === undefined ||
-      cred.sad.a.engagementContextRole === role ||
-      cred.sad.a.officialRole === role
-  );
-
-  return matchingCred || null;
-}
-
-/**
- * Get issued credential with specific role
- * This extends the default credential retrieval to filter by role
-export async function getIssuedCredentialByRole(
-  client: SignifyClient.SignifyClient,
-  issuerAID: any,
-  recipientAID: any,
-  schema: string,
-  role: string
-) {
-  // Get all credentials matching the basic criteria
-  const credentials = await client.credentials().list({
-    filter: {
-      '-i': issuerAID.prefix,
-      '-s': schema,
-      '-a-i': recipientAID.prefix,
-    },
-  });
-
-  // If no credentials found, return null
-  if (!credentials || credentials.length === 0) {
+      if (credRole === role) {
+        console.log(`Found matching credential with role "${role}"`);
+        return cred;
+      }
+    }
+    // No matching credential found
+    console.log(`No credential found with role "${role}"`);
     return null;
   }
 
-  console.log(`Looking for role: "${role}"`);
-  console.log(`Found ${credentials.length} credentials with roles:`);
-  
-  // Filter and display credentials with their role type
-  credentials.forEach((cred, index) => {
-    const roleName = cred.sad.a.engagementContextRole || cred.sad.a.officialRole || "undefined";
-    console.log(
-      `  ${index + 1}. Role: "${roleName}" | SAID: ${cred.sad.d}`
-    );
-  });
-
-  // Find the credential matching the requested role (checking both role types)
-  const matchingCred = credentials.find(
-    (cred) => 
-      (cred.sad.a.engagementContextRole === role) || 
-      (cred.sad.a.officialRole === role)
-  );
-
-  return matchingCred || null;
+  // If no role was specified, return the first credential
+  return credentials[0];
 }
-  */
 
 export async function getOrCreateAID(
   client: SignifyClient.SignifyClient,
