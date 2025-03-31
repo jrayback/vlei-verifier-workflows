@@ -35,3 +35,22 @@ test.only('workflow', async function run() {
     assert.equal(workflowRunResult, true);
   }
 }, 3600000);
+
+test('multiple-creds-same-aid workflow', async function run() {
+  const workflowsDir = '../src/workflows/';
+  const workflowFile = 'multiple-creds-same-aid-test.yaml';
+  const workflow = loadWorkflow(
+    path.join(__dirname, `${workflowsDir}${workflowFile}`)
+  );
+
+  const dirPath = '../src/config/';
+  const configFileName = 'multiple-creds-same-aid-config.json';
+  const configFilePath = path.join(__dirname, dirPath) + configFileName;
+  const configJson = await getConfig(configFilePath);
+
+  if (workflow && configJson) {
+    const wr = new WorkflowRunner(workflow, configJson);
+    const workflowRunResult = await wr.runWorkflow();
+    assert.equal(workflowRunResult, true);
+  }
+}, 3600000);
