@@ -67,7 +67,9 @@ export async function assertOperations(
   for (const client of clients) {
     const operations = await client.operations().list();
     if (operations.length > 0) {
-      console.warn(`Warning: Client has ${operations.length} pending operations`);
+      console.warn(
+        `Warning: Client has ${operations.length} pending operations`
+      );
     }
   }
 }
@@ -626,7 +628,9 @@ export async function sendAdmitMessage(
     '/exn/ipex/grant'
   );
   if (notifications.length !== 1) {
-    console.warn(`Expected exactly 1 notification, found ${notifications.length}`);
+    console.warn(
+      `Expected exactly 1 notification, found ${notifications.length}`
+    );
   }
   const grantNotification = notifications[0];
 

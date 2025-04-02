@@ -284,8 +284,11 @@ export class VleiIssuance {
         console.log('Delegator approve delegation submitted');
         return apprDelRes;
       });
-      console.log('Validating delegation anchor:', 
-        JSON.stringify(result.serder.ked.a[0]) === JSON.stringify(anchor) ? 'valid' : 'invalid'
+      console.log(
+        'Validating delegation anchor:',
+        JSON.stringify(result.serder.ked.a[0]) === JSON.stringify(anchor)
+          ? 'valid'
+          : 'invalid'
       );
 
       const op3 = await client!.keyStates().query(delegatorAid.prefix, '1');
@@ -294,7 +297,8 @@ export class VleiIssuance {
       // Delegate client! checks approval
       await waitOperation(client!, op2);
       const aid2 = await client!.identifiers().get(identifierData.name);
-      console.log('Validating delegate prefix:', 
+      console.log(
+        'Validating delegate prefix:',
         aid2.prefix === delegateAidPrefix ? 'valid' : 'invalid'
       );
       console.log('Delegation approved for aid:', aid2.prefix);
@@ -495,15 +499,19 @@ export class VleiIssuance {
       );
 
       // Replace assertions with validation logging
-      const allSamePrefix = multisigAids.every((aid) => aid.prefix === multisigAids[0].prefix);
-      const allSameName = multisigAids.every((aid) => aid.name === multisigAids[0].name);
-      
+      const allSamePrefix = multisigAids.every(
+        (aid) => aid.prefix === multisigAids[0].prefix
+      );
+      const allSameName = multisigAids.every(
+        (aid) => aid.name === multisigAids[0].name
+      );
+
       if (!allSamePrefix) {
-        console.warn("Warning: Not all AIDs have the same prefix");
+        console.warn('Warning: Not all AIDs have the same prefix');
       }
-      
+
       if (!allSameName) {
-        console.warn("Warning: Not all AIDs have the same name");
+        console.warn('Warning: Not all AIDs have the same name');
       }
 
       const multisigAid = multisigAids[0];
@@ -580,14 +588,16 @@ export class VleiIssuance {
       // Ensure that all OOBIs are consistent across all clients
       // Replace assertions with validation logging
       const allSameRole = oobis.every((oobi) => oobi.role === oobis[0].role);
-      const allSameOobi = oobis.every((oobi) => oobi.oobis[0] === oobis[0].oobis[0]);
-      
+      const allSameOobi = oobis.every(
+        (oobi) => oobi.oobis[0] === oobis[0].oobis[0]
+      );
+
       if (!allSameRole) {
-        console.warn("Warning: Not all OOBIs have the same role");
+        console.warn('Warning: Not all OOBIs have the same role');
       }
-      
+
       if (!allSameOobi) {
-        console.warn("Warning: Not all OOBIs have the same OOBI value");
+        console.warn('Warning: Not all OOBIs have the same OOBI value');
       }
 
       const oobi = oobis[0].oobis[0].split('/agent/')[0];
@@ -696,11 +706,15 @@ export class VleiIssuance {
       // Replace assertions with conditional logging
       for (const reg of registries) {
         if (reg[0].regk !== firstRegistry.regk) {
-          console.warn(`Registry key mismatch: expected ${firstRegistry.regk}, got ${reg[0].regk}`);
+          console.warn(
+            `Registry key mismatch: expected ${firstRegistry.regk}, got ${reg[0].regk}`
+          );
         }
-        
+
         if (reg[0].name !== firstRegistry.name) {
-          console.warn(`Registry name mismatch: expected ${firstRegistry.name}, got ${reg[0].name}`);
+          console.warn(
+            `Registry name mismatch: expected ${firstRegistry.name}, got ${reg[0].name}`
+          );
         }
       }
 
@@ -1483,8 +1497,7 @@ export class VleiIssuance {
       }
       credHolder = cred;
     } else {
-      const singlesigIdentifierData =
-        issuerAIDInfo as SinglesigIdentifierData;
+      const singlesigIdentifierData = issuerAIDInfo as SinglesigIdentifierData;
       const client = workflow_state.clients.get(
         singlesigIdentifierData.agent.name
       );
@@ -1493,32 +1506,40 @@ export class VleiIssuance {
 
     // Replace assertions with validation checks
     if (credHolder.sad.d !== cred.sad.d) {
-      console.warn(`Credential ID mismatch: expected ${cred.sad.d}, got ${credHolder.sad.d}`);
+      console.warn(
+        `Credential ID mismatch: expected ${cred.sad.d}, got ${credHolder.sad.d}`
+      );
       return false;
     }
-    
+
     if (credHolder.sad.s !== schema) {
-      console.warn(`Schema mismatch: expected ${schema}, got ${credHolder.sad.s}`);
+      console.warn(
+        `Schema mismatch: expected ${schema}, got ${credHolder.sad.s}`
+      );
       return false;
     }
-    
+
     if (credHolder.sad.i !== issuerAID.prefix) {
-      console.warn(`Issuer mismatch: expected ${issuerAID.prefix}, got ${credHolder.sad.i}`);
+      console.warn(
+        `Issuer mismatch: expected ${issuerAID.prefix}, got ${credHolder.sad.i}`
+      );
       return false;
     }
-    
+
     if (credHolder.sad.a.i !== recipientAID.prefix) {
-      console.warn(`Recipient mismatch: expected ${recipientAID.prefix}, got ${credHolder.sad.a.i}`);
+      console.warn(
+        `Recipient mismatch: expected ${recipientAID.prefix}, got ${credHolder.sad.a.i}`
+      );
       return false;
     }
-    
+
     if (credHolder.status.s !== '0') {
       console.warn(`Status mismatch: expected 0, got ${credHolder.status.s}`);
       return false;
     }
-    
+
     if (credHolder.atc === undefined) {
-      console.warn("Missing attachment");
+      console.warn('Missing attachment');
       return false;
     }
 
@@ -1544,7 +1565,9 @@ export class VleiIssuance {
     const credReceived = await getReceivedCredential(issueeClient!, cred.sad.d);
     // Replace assert with conditional logging
     if (cred.sad.d !== credReceived?.sad?.d) {
-      console.warn(`Credential ID mismatch: expected ${cred.sad.d}, got ${credReceived?.sad?.d}`);
+      console.warn(
+        `Credential ID mismatch: expected ${cred.sad.d}, got ${credReceived?.sad?.d}`
+      );
       return false;
     }
     return true;
