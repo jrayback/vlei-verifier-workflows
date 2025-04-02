@@ -280,3 +280,28 @@ export class AddRootOfTrustStepRunner extends StepRunner {
     return response;
   }
 }
+
+export class VerifyCredentialFilterStepRunner extends StepRunner {
+  type = 'verify_credential_filter';
+  
+  public async run(_stepName: string, step: any): Promise<any> {
+    const workflow_state = WorkflowState.getInstance();
+    const credential = workflow_state.credentials.get(step.credential_id);
+    
+    if (!credential || !credential.cred) {
+      throw new Error(`Credential not found: ${step.credential_id}`);
+    }
+    
+    const actualRole = credential.cred.sad.a.engagementContextRole || 
+                    credential.cred.sad.a.officialRole;
+    
+    console.log(`Verifying credential ${step.credential_id} has role "${step.expected_role}"`);
+    console.log(`Actual role: "${actualRole}"`);
+    
+    if (actualRole !== step.expected_role) {
+      throw new Error(`Role mismatch: expected "${step.expected_role}", got "${actualRole}"`);
+    }
+    
+    return true;
+  }
+}

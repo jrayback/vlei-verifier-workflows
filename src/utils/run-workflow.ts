@@ -10,6 +10,7 @@ import {
   CreateAidStepRunner,
   CreateRegistryStepRunner,
   AddRootOfTrustStepRunner,
+  VerifyCredentialFilterStepRunner,
 } from './workflow-step-runners.js';
 
 export class WorkflowRunner {
@@ -37,6 +38,7 @@ export class WorkflowRunner {
       new NotifyCredentialIssueeStepRunner()
     );
     this.registerRunner('vlei_verification', new VleiVerificationStepRunner());
+    this.registerRunner('verify_credential_filter', new VerifyCredentialFilterStepRunner());
   }
 
   public registerRunner(name: string, runner: StepRunner) {
