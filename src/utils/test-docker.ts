@@ -1,16 +1,40 @@
-import { exec } from 'child_process';
-import * as net from 'net';
+// Replace individual imports with centralized imports
+import { exec } from '../node-modules.js';
+import { net } from '../node-modules.js';
 import { ensureDockerPermissions } from './docker-permissions.js';
-import Dockerode from 'dockerode';
-import { ChildProcess } from 'child_process';
+
+// Define a function to get Dockerode that works in both ESM and CommonJS
+function getDockerodeConstructor() {
+  try {
+    // This will be transformed properly in CommonJS builds
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require('dockerode');
+  } catch (error) {
+    console.error('Failed to load Dockerode:', error);
+    throw new Error('Failed to load Dockerode module');
+  }
+}
+
 export class DockerComposeState {
   private static instance: DockerComposeState;
   private isRunning = false;
   private initializationPromise: Promise<void> | null = null;
-  private activeProcesses: Set<ChildProcess> = new Set<ChildProcess>();
-  private docker: Dockerode = new Dockerode();
+  private activeProcesses = new Set<import('child_process').ChildProcess>();
+  docker: any; // Use any to avoid type issues
 
   private constructor() {
+    try {
+      // Load Dockerode dynamically to ensure it works in both module formats
+      const DockerodeConstructor = getDockerodeConstructor();
+      this.docker = new DockerodeConstructor();
+      console.log('Successfully initialized Docker client');
+    } catch (error) {
+      console.error('Error initializing Docker client:', error);
+      throw new Error(
+        `Failed to initialize Docker client: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+
     // Handle cleanup on process exit
     process.on('beforeExit', async () => {
       await this.cleanup();
@@ -360,3 +384,22 @@ export async function isDockerComposeRunning(
 }
 
 export const DOCKER_COMPOSE_COMMAND = 'docker compose';
+
+export async function runDockerComposeCommand(
+  composeFilePath: string,
+  command: string
+): Promise<string> {
+  const fullCommand = `docker compose -f ${composeFilePath} ${command}`;
+  console.log(`Running docker compose command: ${fullCommand}`);
+
+  return new Promise((resolve, reject) => {
+    exec(fullCommand, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error running docker compose command: ${stderr}`);
+        return reject(error);
+      }
+      console.log('Docker compose output:', stdout);
+      resolve(stdout);
+    });
+  });
+}

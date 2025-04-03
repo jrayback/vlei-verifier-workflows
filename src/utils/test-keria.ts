@@ -1,12 +1,17 @@
-import * as fs from 'fs';
-import path from 'path';
-import * as os from 'os';
+import { fs, path, os, exec, URL, DockerodeTypes } from '../node-modules.js';
 import { TestPaths } from './test-paths.js';
-import { URL } from 'url';
-import minimist from 'minimist';
-import dockerode from 'dockerode';
-import Dockerode from 'dockerode';
-import { exec } from 'child_process';
+
+// Define a function to get Dockerode that works in both ESM and CommonJS
+function getDockerodeConstructor() {
+  try {
+    // This will be transformed properly in CommonJS builds
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require('dockerode');
+  } catch (error) {
+    console.error('Failed to load Dockerode:', error);
+    throw new Error('Failed to load Dockerode module');
+  }
+}
 
 export const ARG_KERIA_DOMAIN = 'keria_domain'; //external domain for keria
 export const ARG_WITNESS_HOST = 'witness_host'; //docker domain for witness
@@ -32,6 +37,7 @@ export class TestKeria {
     string,
     TestKeria
   >();
+  public static readonly AGENT_CONTEXT: string = 'agent_context';
   public testPaths: TestPaths;
   public keriaAdminPort: number;
   public keriaAdminUrl: URL;
@@ -44,12 +50,11 @@ export class TestKeria {
   public witnessHost: string;
   public host: string;
   public keriaImage: string;
-  private containers: Map<string, dockerode.Container> = new Map<
+  private containers: Map<string, DockerodeTypes.Container> = new Map<
     string,
-    dockerode.Container
+    DockerodeTypes.Container
   >();
-  private docker = new Dockerode();
-  public static AGENT_CONTEXT = 'agentContext';
+  private docker: any;
 
   private constructor(
     testPaths: TestPaths,
@@ -61,6 +66,12 @@ export class TestKeria {
     kBootPort: number,
     keriaImage: string
   ) {
+    this.containers = new Map();
+
+    // Load Dockerode dynamically to ensure it works in both module formats
+    const DockerodeConstructor = getDockerodeConstructor();
+    this.docker = new DockerodeConstructor();
+
     this.testPaths = testPaths;
     this.domain = domain;
     this.witnessHost = witnessHost;
@@ -131,9 +142,9 @@ export class TestKeria {
             domain!,
             host!,
             containerLocalhost!,
-            parseInt(args[ARG_KERIA_ADMIN_PORT], 10),
-            parseInt(args[ARG_KERIA_HTTP_PORT], 10),
-            parseInt(args[ARG_KERIA_BOOT_PORT], 10),
+            args[ARG_KERIA_ADMIN_PORT],
+            args[ARG_KERIA_HTTP_PORT],
+            args[ARG_KERIA_BOOT_PORT],
             keriaImage
           )
         );
@@ -148,40 +159,71 @@ export class TestKeria {
     return TestKeria.instances.get(instanceName)!;
   }
 
-  public static processKeriaArgs(
+  static processKeriaArgs(
     baseAdminPort: number,
     baseHttpPort: number,
     baseBootPort: number
-  ): minimist.ParsedArgs {
-    // Parse command-line arguments using minimist
-    const args = minimist(process.argv.slice(process.argv.indexOf('--') + 1), {
-      alias: {
-        [ARG_KERIA_ADMIN_PORT]: 'kap',
-        [ARG_KERIA_HTTP_PORT]: 'khp',
-        [ARG_KERIA_BOOT_PORT]: 'kbp',
-      },
-      default: {
-        [ARG_KERIA_ADMIN_PORT]: process.env.KERIA_ADMIN_PORT
-          ? parseInt(process.env.KERIA_ADMIN_PORT)
-          : baseAdminPort,
-        [ARG_KERIA_HTTP_PORT]: process.env.KERIA_HTTP_PORT
-          ? parseInt(process.env.KERIA_HTTP_PORT)
-          : baseHttpPort,
-        [ARG_KERIA_BOOT_PORT]: process.env.KERIA_BOOT_PORT
-          ? parseInt(process.env.KERIA_BOOT_PORT)
-          : baseBootPort,
-      },
-      '--': true,
-      unknown: (_arg) => {
-        // console.info(`Unknown keria argument, skipping: ${arg}`);
-        return false;
-      },
-    });
+  ) {
+    // Create default args object
+    const args = {
+      [ARG_KERIA_ADMIN_PORT]: baseAdminPort,
+      [ARG_KERIA_HTTP_PORT]: baseHttpPort,
+      [ARG_KERIA_BOOT_PORT]: baseBootPort,
+      [ARG_KERIA_START_PORT]: baseAdminPort,
+      [ARG_KERIA_DOMAIN]: '127.0.0.1',
+      [ARG_WITNESS_HOST]: 'localhost',
+      [ARG_KERIA_HOST]: '127.0.0.1',
+      [ARG_REFRESH]: false,
+    };
+
+    // Simple argument parser that doesn't rely on minimist
+    try {
+      const argIndex = process.argv.indexOf('--');
+      if (argIndex >= 0) {
+        const cliArgs = process.argv.slice(argIndex + 1);
+
+        // Process arguments in pairs (--key value)
+        for (let i = 0; i < cliArgs.length; i += 2) {
+          const key = cliArgs[i].replace(/^--/, '');
+          const value = cliArgs[i + 1];
+
+          // Handle aliases
+          const aliasMap: Record<string, string> = {
+            kap: ARG_KERIA_ADMIN_PORT,
+            khp: ARG_KERIA_HTTP_PORT,
+            kbp: ARG_KERIA_BOOT_PORT,
+            ksp: ARG_KERIA_START_PORT,
+            kd: ARG_KERIA_DOMAIN,
+            wh: ARG_WITNESS_HOST,
+            kh: ARG_KERIA_HOST,
+            r: ARG_REFRESH,
+          };
+
+          const actualKey = aliasMap[key] || key;
+
+          // Set the value in args
+          if (actualKey in args) {
+            // Convert to appropriate type
+            if (typeof args[actualKey as keyof typeof args] === 'number') {
+              (args as any)[actualKey] = parseInt(value, 10);
+            } else if (
+              typeof args[actualKey as keyof typeof args] === 'boolean'
+            ) {
+              (args as any)[actualKey] = value === 'true';
+            } else {
+              (args as any)[actualKey] = value;
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing command line arguments:', error);
+    }
 
     return args;
   }
 
-  async startupInstance(
+  public async startupInstance(
     keriaImage: string,
     containerPostfix: string,
     refresh: boolean,
@@ -215,10 +257,10 @@ export class TestKeria {
     pullImage: boolean,
     platform = 'linux/amd64',
     useHostNetwork = true
-  ): Promise<dockerode.Container> {
+  ): Promise<DockerodeTypes.Container> {
     try {
       console.log(`Creating container ${containerName}...`);
-      const containerOptions: dockerode.ContainerCreateOptions = {
+      const containerOptions: DockerodeTypes.ContainerCreateOptions = {
         Image: imageName,
         name: containerName,
         platform: platform,
@@ -323,6 +365,16 @@ export class TestKeria {
   public static async cleanupInstances(testContexts: string[]): Promise<void> {
     console.log('Running workflow-steps test cleanup...');
     try {
+      // Check if testContexts is defined and not empty
+      if (
+        !testContexts ||
+        !Array.isArray(testContexts) ||
+        testContexts.length === 0
+      ) {
+        console.log('No test contexts provided for cleanup, skipping');
+        return;
+      }
+
       // Use Promise.all to wait for all cleanup operations to complete
       await Promise.all(
         testContexts.map(async (contextId) => {
@@ -352,7 +404,7 @@ export class TestKeria {
   /**
    * Cleans up a specific instance
    */
-  async cleanupInstance(instanceId: string): Promise<void> {
+  public async cleanupInstance(instanceId: string): Promise<void> {
     console.log(`Cleanup for keria instance ${instanceId}...`);
     try {
       // Clean up test data
@@ -399,7 +451,9 @@ export class TestKeria {
     }
   }
 
-  async createTempKeriaConfigFile(kConfig: KeriaConfig): Promise<string> {
+  public async createTempKeriaConfigFile(
+    kConfig: KeriaConfig
+  ): Promise<string> {
     console.log('Create temp config file...');
     try {
       const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'keria-config-'));
@@ -468,7 +522,9 @@ export class TestKeria {
 
     // Force cleanup any containers that might have been missed
     try {
-      const docker = new Dockerode();
+      // Load Dockerode dynamically
+      const DockerodeConstructor = getDockerodeConstructor();
+      const docker = new DockerodeConstructor();
 
       // Get all containers
       const containers = await docker.listContainers({ all: true });
@@ -527,24 +583,11 @@ export class TestKeria {
         );
       }
     } catch (error) {
-      console.error('Error during force cleanup:', error);
+      console.error('Error cleaning up leftover containers:', error);
     }
 
     console.log('All Keria instances cleanup completed');
   }
-
-  //   private static getUniqueOffsetForInstance(instanceName: string): number {
-  //     if (!TestKeria._instanceOffsets) {
-  //       TestKeria._instanceOffsets = new Map<string, number>();
-  //     }
-
-  //     if (!TestKeria._instanceOffsets.has(instanceName)) {
-  //       const nextOffset = TestKeria._instanceOffsets.size * 10;
-  //       TestKeria._instanceOffsets.set(instanceName, nextOffset);
-  //     }
-
-  //     return TestKeria._instanceOffsets.get(instanceName)!;
-  //   }
 
   private static _instanceOffsets: Map<string, number>;
 
