@@ -61,12 +61,12 @@ test('role-filter-workflow', async function run() {
   const workflow = loadWorkflow(
     path.join(__dirname, `${workflowsDir}${workflowFile}`)
   );
-  
+
   const dirPath = '../src/config/';
   const configFileName = 'role-filter-test-config.json';
   const configFilePath = path.join(__dirname, dirPath) + configFileName;
   const configJson = await getConfig(configFilePath);
-  
+
   if (workflow && configJson) {
     const wr = new WorkflowRunner(workflow, configJson);
     const workflowRunResult = await wr.runWorkflow();

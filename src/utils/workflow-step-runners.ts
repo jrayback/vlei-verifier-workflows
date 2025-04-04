@@ -92,17 +92,18 @@ export class IssueCredentialStepRunner extends StepRunner {
 
     if (step.verify_retrieval) {
       console.log(`Verifying role-based credential retrieval...`);
-      
-      const role = result.cred.sad.a.engagementContextRole || 
-                   result.cred.sad.a.officialRole;
-      
+
+      const role =
+        result.cred.sad.a.engagementContextRole ||
+        result.cred.sad.a.officialRole;
+
       if (!role) {
         console.log(`No role found in credential, skipping verification`);
         return result;
       }
-      
+
       console.log(`Attempting to retrieve credential by role: "${role}"`);
-      
+
       const retrievedCred = await getIssuedCredential(
         step.issuer_aid,
         step.issuee_aid,
@@ -110,19 +111,21 @@ export class IssueCredentialStepRunner extends StepRunner {
         step.credential,
         role
       );
-      
+
       if (!retrievedCred) {
         throw new Error(`Failed to retrieve credential with role "${role}"`);
       }
-      
+
       // Verify it's the same credential
       if (retrievedCred.sad.d !== result.cred.sad.d) {
         throw new Error(
           `Retrieved wrong credential! Expected SAID ${result.cred.sad.d}, got ${retrievedCred.sad.d}`
         );
       }
-      
-      console.log(`✅ Successfully verified role-based credential retrieval for role "${role}"`);
+
+      console.log(
+        `✅ Successfully verified role-based credential retrieval for role "${role}"`
+      );
     }
 
     return result;
@@ -319,25 +322,30 @@ export class AddRootOfTrustStepRunner extends StepRunner {
 
 export class VerifyCredentialFilterStepRunner extends StepRunner {
   type = 'verify_credential_filter';
-  
+
   public async run(_stepName: string, step: any): Promise<any> {
     const workflow_state = WorkflowState.getInstance();
     const credential = workflow_state.credentials.get(step.credential_id);
-    
+
     if (!credential || !credential.cred) {
       throw new Error(`Credential not found: ${step.credential_id}`);
     }
-    
-    const actualRole = credential.cred.sad.a.engagementContextRole || 
-                    credential.cred.sad.a.officialRole;
-    
-    console.log(`Verifying credential ${step.credential_id} has role "${step.expected_role}"`);
+
+    const actualRole =
+      credential.cred.sad.a.engagementContextRole ||
+      credential.cred.sad.a.officialRole;
+
+    console.log(
+      `Verifying credential ${step.credential_id} has role "${step.expected_role}"`
+    );
     console.log(`Actual role: "${actualRole}"`);
-    
+
     if (actualRole !== step.expected_role) {
-      throw new Error(`Role mismatch: expected "${step.expected_role}", got "${actualRole}"`);
+      throw new Error(
+        `Role mismatch: expected "${step.expected_role}", got "${actualRole}"`
+      );
     }
-    
+
     return true;
   }
 }

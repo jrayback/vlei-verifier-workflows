@@ -141,4 +141,4 @@ workflow:
           aid: 'recipient-aid'
           type: 'credential_authorization'
           expected_status: 'cred_verified'
-      depends: ['issue_role3_credential'] 
+      depends: ['issue_role3_credential']
