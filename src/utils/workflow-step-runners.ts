@@ -15,7 +15,7 @@ import {
 } from './handle-json-config.js';
 import { WorkflowState } from '../workflow-state.js';
 import { resolveEnvironment } from './resolve-env.js';
-import { getRootOfTrust } from './test-util.js';
+import { getRootOfTrust, getIssuedCredential } from './test-util.js';
 
 export abstract class StepRunner {
   type = '';
@@ -89,6 +89,42 @@ export class IssueCredentialStepRunner extends StepRunner {
       Boolean(step.generate_test_data),
       step.test_name
     );
+
+    if (step.verify_retrieval) {
+      console.log(`Verifying role-based credential retrieval...`);
+      
+      const role = result.cred.sad.a.engagementContextRole || 
+                   result.cred.sad.a.officialRole;
+      
+      if (!role) {
+        console.log(`No role found in credential, skipping verification`);
+        return result;
+      }
+      
+      console.log(`Attempting to retrieve credential by role: "${role}"`);
+      
+      const retrievedCred = await getIssuedCredential(
+        step.issuer_aid,
+        step.issuee_aid,
+        step.credential_source,
+        step.credential,
+        role
+      );
+      
+      if (!retrievedCred) {
+        throw new Error(`Failed to retrieve credential with role "${role}"`);
+      }
+      
+      // Verify it's the same credential
+      if (retrievedCred.sad.d !== result.cred.sad.d) {
+        throw new Error(
+          `Retrieved wrong credential! Expected SAID ${result.cred.sad.d}, got ${retrievedCred.sad.d}`
+        );
+      }
+      
+      console.log(`✅ Successfully verified role-based credential retrieval for role "${role}"`);
+    }
+
     return result;
   }
 }
