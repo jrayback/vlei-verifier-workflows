@@ -225,11 +225,12 @@ export class PublishDidWebsStepRunner extends StepRunner {
   public async run(
     _stepName: string,
     step: any,
-    _configJson: any
+    configJson: any
   ): Promise<any> {
     // const env = resolveEnvironment();
     const key_event_stream = step.key_event_stream;
-    console.log(`KEY EVENT STREAM ------> ${key_event_stream}`);
+    console.log(`Key Event Stream: ${key_event_stream}`);
+    console.log('Web Info:', JSON.stringify(configJson.webs, null, 2));
     return true;
   }
 }
