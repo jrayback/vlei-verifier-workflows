@@ -218,3 +218,18 @@ export class AddRootOfTrustStepRunner extends StepRunner {
     return response;
   }
 }
+
+export class PublishDidWebsStepRunner extends StepRunner {
+  type = 'publish_did_webs';
+
+  public async run(
+    _stepName: string,
+    step: any,
+    _configJson: any
+  ): Promise<any> {
+    // const env = resolveEnvironment();
+    const key_event_stream = step.key_event_stream;
+    console.log(`KEY EVENT STREAM ------> ${key_event_stream}`);
+    return true;
+  }
+}

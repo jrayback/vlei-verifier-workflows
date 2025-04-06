@@ -10,6 +10,7 @@ import {
   CreateAidStepRunner,
   CreateRegistryStepRunner,
   AddRootOfTrustStepRunner,
+  PublishDidWebsStepRunner,
 } from './workflow-step-runners';
 
 export class WorkflowRunner {
@@ -40,6 +41,7 @@ export class WorkflowRunner {
       'credential_verification',
       new CredentialVerificationStepRunner()
     );
+    this.registerRunner('publish_did_webs', new PublishDidWebsStepRunner());
   }
 
   public registerRunner(name: string, runner: StepRunner) {
