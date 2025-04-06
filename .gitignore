@@ -10,3 +10,6 @@ coverage/*
 
 # Visual Studio Code
 .vscode
+
+# ignore local development atrifacts
+output.txt
