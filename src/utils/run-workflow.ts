@@ -1,4 +1,4 @@
-import { WorkflowState } from '../workflow-state';
+import { WorkflowState } from '../workflow-state.js';
 
 import {
   IssueCredentialStepRunner,
@@ -11,7 +11,7 @@ import {
   CreateRegistryStepRunner,
   AddRootOfTrustStepRunner,
   PublishDidWebsStepRunner,
-} from './workflow-step-runners';
+} from './workflow-step-runners.js';
 
 export class WorkflowRunner {
   stepRunners: Map<string, StepRunner> = new Map<string, StepRunner>();

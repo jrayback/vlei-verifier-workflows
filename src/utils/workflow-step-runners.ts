@@ -1,20 +1,20 @@
-import { VleiIssuance } from '../vlei-issuance';
-import { CredentialVerification } from '../credential-verification';
+import { VleiIssuance } from '../vlei-issuance.js';
+import { CredentialVerification } from '../credential-verification.js';
 import {
   VleiUser,
   credPresentationStatusMapping,
   credAuthorizationStatusMapping,
-} from './test-data';
+} from './test-data.js';
 import {
   getAgentSecret,
   getIdentifierData,
   IdentifierData,
   MultisigIdentifierData,
   SinglesigIdentifierData,
-} from './handle-json-config';
-import { WorkflowState } from '../workflow-state';
-import { resolveEnvironment } from './resolve-env';
-import { getRootOfTrust } from './test-util';
+} from './handle-json-config.js';
+import { WorkflowState } from '../workflow-state.js';
+import { resolveEnvironment } from './resolve-env.js';
+import { getRootOfTrust } from './test-util.js';
 import { VerifierClient } from 'vlei-verifier-client';
 
 export abstract class StepRunner {

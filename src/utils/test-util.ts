@@ -10,13 +10,13 @@ import signify, {
   SignifyClient,
   Tier,
 } from 'signify-ts';
-import { RetryOptions, retry } from './retry';
-import { resolveEnvironment } from './resolve-env';
-import { WorkflowState } from '../workflow-state';
+import { RetryOptions, retry } from './retry.js';
+import { resolveEnvironment } from './resolve-env.js';
+import { WorkflowState } from '../workflow-state.js';
 import {
   getIdentifierData,
   SinglesigIdentifierData,
-} from './handle-json-config';
+} from './handle-json-config.js';
 
 export interface Aid {
   name: string;

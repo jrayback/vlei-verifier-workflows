@@ -25,7 +25,7 @@ import {
   assertOperations,
   sleep,
   revokeCredential,
-} from './utils/test-util';
+} from './utils/test-util.js';
 import {
   addEndRoleMultisig,
   admitMultisig,
@@ -35,9 +35,9 @@ import {
   grantMultisig,
   issueCredentialMultisig,
   multisigRevoke,
-} from './utils/multisig-utils';
+} from './utils/multisig-utils.js';
 import { boolean } from 'mathjs';
-import { retry } from './utils/retry';
+import { retry } from './utils/retry.js';
 import {
   QVI_SCHEMA_URL,
   LE_SCHEMA_URL,
@@ -46,17 +46,17 @@ import {
   OOR_AUTH_SCHEMA_URL,
   OOR_SCHEMA_URL,
   CRED_RETRY_DEFAULTS,
-} from './constants';
+} from './constants.js';
 
 import {
   CredentialInfo,
   IdentifierData,
   MultisigIdentifierData,
   SinglesigIdentifierData,
-} from './utils/handle-json-config';
-import { buildTestData, EcrTestData } from './utils/generate-test-data';
-import { VleiUser } from './utils/test-data';
-import { WorkflowState } from './workflow-state';
+} from './utils/handle-json-config.js';
+import { buildTestData, EcrTestData } from './utils/generate-test-data.js';
+import { VleiUser } from './utils/test-data.js';
+import { WorkflowState } from './workflow-state.js';
 
 export class VleiIssuance {
   // Create client for given AID

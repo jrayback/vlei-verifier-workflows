@@ -1,9 +1,12 @@
 import path from 'path';
-import { resolveEnvironment, TestEnvironment } from '../src/utils/resolve-env';
-import { getConfig } from '../src/utils/test-data';
-import { WorkflowRunner } from '../src/utils/run-workflow';
+import {
+  resolveEnvironment,
+  TestEnvironment,
+} from '../src/utils/resolve-env.js';
+import { getConfig } from '../src/utils/test-data.js';
+import { WorkflowRunner } from '../src/utils/run-workflow.js';
 import { strict as assert } from 'assert';
-import { loadWorkflow } from '../src/utils/test-data';
+import { loadWorkflow } from '../src/utils/test-data.js';
 
 let env: TestEnvironment;
 

@@ -42,8 +42,11 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Run Prettier
-        run: npm run pretty:check
+      - name: Run Formatter Check
+        run: npm run formatter
+
+      - name: Run Dependency Check
+        run: npm run dependency-checker
 
       - name: Build
         run: npm run build

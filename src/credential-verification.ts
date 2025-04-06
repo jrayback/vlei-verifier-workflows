@@ -1,11 +1,11 @@
-import { resolveEnvironment } from './utils/resolve-env';
+import { resolveEnvironment } from './utils/resolve-env.js';
 import {
   CREDENTIAL_CRYPT_VALID,
   CREDENTIAL_VERIFIED,
   CredentialPresentationStatus,
   CredentialAuthorizationStatus,
   VleiUser,
-} from './utils/test-data';
+} from './utils/test-data.js';
 import { strict as assert } from 'assert';
 import { VerifierClient } from 'vlei-verifier-client';
 
