@@ -11,7 +11,7 @@ export class WorkflowState {
   configJson: any;
   schemas: any = SCHEMAS;
   rules: any = RULES;
-  clients = new Map<string, SignifyClient>();
+  clients = new Map<string, SignifyClient.SignifyClient>();
   aids = new Map<string, any>();
   oobis = new Map<string, any[]>();
   credentialsInfo = new Map<string, CredentialInfo>();

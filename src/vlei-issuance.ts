@@ -1,11 +1,5 @@
 import { strict as assert } from 'assert';
-import signify, {
-  Saider,
-  CreateIdentiferArgs,
-  randomNonce,
-  Salter,
-  HabState,
-} from 'signify-ts';
+import SignifyClient from 'signify-ts';
 import {
   resolveOobi,
   waitOperation,
@@ -230,7 +224,7 @@ export class VleiIssuance {
   public static async createAidSinglesig(identifierData: IdentifierData) {
     const workflow_state = WorkflowState.getInstance();
     const delegator = identifierData.delegator;
-    const kargsSinglesigAID: CreateIdentiferArgs = {
+    const kargsSinglesigAID: SignifyClient.CreateIdentiferArgs = {
       toad: workflow_state.kargsAID.toad,
       wits: workflow_state.kargsAID.wits,
     };
@@ -322,7 +316,7 @@ export class VleiIssuance {
   public static async createAidMultisig(identifierData: IdentifierData) {
     const workflow_state = WorkflowState.getInstance();
     const multisigIdentifierData = identifierData as MultisigIdentifierData;
-    let multisigAids: HabState[] = [];
+    let multisigAids: SignifyClient.HabState[] = [];
     const aidIdentifierNames: string[] = multisigIdentifierData.identifiers;
 
     const issuerAids =
@@ -350,8 +344,8 @@ export class VleiIssuance {
       const rstates = issuerAids.map((aid) => aid.state);
       const states = rstates;
 
-      const kargsMultisigAID: CreateIdentiferArgs = {
-        algo: signify.Algos.group,
+      const kargsMultisigAID: SignifyClient.CreateIdentiferArgs = {
+        algo: SignifyClient.Algos.group,
         isith: multisigIdentifierData.isith,
         nsith: multisigIdentifierData.nsith,
         toad: workflow_state.kargsAID.toad,
@@ -617,7 +611,9 @@ export class VleiIssuance {
   public static async createRegistryMultisig(identifierData: IdentifierData) {
     const multisigIdentifierData = identifierData as MultisigIdentifierData;
     const workflow_state = WorkflowState.getInstance();
-    const multisigAid: HabState = workflow_state.aids.get(identifierData.name);
+    const multisigAid: SignifyClient.HabState = workflow_state.aids.get(
+      identifierData.name
+    );
     const registryIdentifierName = `${identifierData.name}Registry`;
     const aidIdentifierNames: string[] = multisigIdentifierData.identifiers;
     const registries: any[] = new Array<any>();
@@ -644,7 +640,7 @@ export class VleiIssuance {
     const allEmpty = registries.every((registry) => registry.length === 0);
 
     if (allEmpty) {
-      const nonce = randomNonce();
+      const nonce = SignifyClient.randomNonce();
       const registryOps = issuerAids!.map((aid, index) => {
         const tmpAidData = workflow_state.aidsInfo.get(
           aid.name
@@ -667,7 +663,7 @@ export class VleiIssuance {
 
       // Wait for all operations to complete across multiple clients
       await Promise.all(
-        createdOps.map(async (op, index) => {
+        createdOps.map(async (op: any, index: any) => {
           const tmpAidData = workflow_state.aidsInfo.get(
             issuerAids![index].name
           ) as SinglesigIdentifierData;
@@ -960,7 +956,7 @@ export class VleiIssuance {
       const kargsSub = {
         i: recipientAID.prefix,
         dt: createTimestamp(),
-        u: privacy ? new Salter({}).qb64 : undefined,
+        u: privacy ? new SignifyClient.Salter({}).qb64 : undefined,
         ...credData,
       };
 
@@ -969,7 +965,7 @@ export class VleiIssuance {
         ri: issuerRegistry.regk,
         s: schema,
         a: kargsSub,
-        u: privacy ? new Salter({}).qb64 : undefined,
+        u: privacy ? new SignifyClient.Salter({}).qb64 : undefined,
         ...credSource!,
         ...rules!,
       };
@@ -1452,7 +1448,7 @@ export class VleiIssuance {
     if (o != null) {
       credDict['o'] = o;
     }
-    const credSource = Saider.saidify({
+    const credSource = SignifyClient.Saider.saidify({
       d: '',
       [credType]: credDict,
     })[1];

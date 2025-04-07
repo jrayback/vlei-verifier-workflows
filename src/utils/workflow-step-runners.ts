@@ -16,6 +16,7 @@ import { WorkflowState } from '../workflow-state.js';
 import { resolveEnvironment } from './resolve-env.js';
 import { getRootOfTrust } from './test-util.js';
 import { VerifierClient } from 'vlei-verifier-client';
+import { publishDid } from '@gleif-it/did-webs-ts';
 
 export abstract class StepRunner {
   type = '';
@@ -231,6 +232,14 @@ export class PublishDidWebsStepRunner extends StepRunner {
     const key_event_stream = step.key_event_stream;
     console.log(`Key Event Stream: ${key_event_stream}`);
     console.log('Web Info:', JSON.stringify(configJson.webs, null, 2));
+    const [didJson, keriCesr, did] = publishDid(
+      key_event_stream,
+      configJson.webs
+    );
+    console.log(`did.json = ${JSON.stringify(didJson, null, 2)}`);
+    console.log(`keri.cesr = ${keriCesr}`);
+    console.log(`did:webs = ${did}`);
+
     return true;
   }
 }

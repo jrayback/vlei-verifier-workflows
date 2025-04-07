@@ -8,8 +8,8 @@
     "declarationDir": "../dist/cjs/types",
     "paths": {
       // Need to explicitly tell typescript to grab the cjs types instead of esm - Don't ask...
-      "@gleif-it/vlei-verifier-workflows": [
-        "../node_modules/@gleif-it/vlei-verifier-workflows/dist/cjs/types"
+      "@gleif-it/did-webs-ts": [
+        "../node_modules/@gleif-it/did-webs-ts/dist/cjs/types"
       ]
     }
   },

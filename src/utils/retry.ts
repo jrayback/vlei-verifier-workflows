@@ -1,4 +1,4 @@
-import { setTimeout } from 'timers/promises.js';
+import { setTimeout } from 'timers/promises';
 
 export interface RetryOptions {
   maxSleep?: number;
