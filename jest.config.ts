@@ -1,5 +1,6 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} */
-export default {
+import { Config } from 'jest';
+
+const config: Config = {
   // need esm preset to support esm modules
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
@@ -17,7 +18,7 @@ export default {
       },
     ],
   },
-  extensionsToTreatAsEsm: ['.ts'],
-  // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  roots: ['<rootDir>/src'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 };
+
+export default config;

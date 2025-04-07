@@ -3,6 +3,9 @@ import { getConfig } from '../../src/utils/test-data.js';
 import { WorkflowRunner } from '../../src/utils/run-workflow.js';
 import { loadWorkflow } from '../../src/utils/test-data.js';
 import { WorkflowState } from '../../src/workflow-state.js';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 describe('testing Client creation workflow step', () => {
   test('successful client creation', async function run() {

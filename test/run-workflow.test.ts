@@ -7,6 +7,9 @@ import { getConfig } from '../src/utils/test-data.js';
 import { WorkflowRunner } from '../src/utils/run-workflow.js';
 import { strict as assert } from 'assert';
 import { loadWorkflow } from '../src/utils/test-data.js';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let env: TestEnvironment;
 

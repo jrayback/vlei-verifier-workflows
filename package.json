@@ -50,7 +50,7 @@
     "lint": "npx eslint src test",
     "packageCheck": "npm pack --dry-run",
     "prepublishOnly": "npm run full-checker && npm test && npm run build && npm run compatibility-checker",
-    "test": "npm run docker:down && npm run docker:up && jest test/ && npm run docker:down",
+    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --verbose",
     "test:full": "npm run build:clean && npm run dependency-checker && npm run lint && npm run formatter && npm run workflow:all",
     "workflow:all": "npm run workflow:singlesig-single-user-light && npm run workflow:singlesig-single-user && npm run workflow:singlesig-multi-user-vlei-verifier-router-test && npm run workflow:singlesig-aid && npm run workflow:revocation-test-singlesig && npm run workflow:multisig-single-user && npm run workflow:multisig-single-user-non-delegated-aids",
     "workflow:multisig-single-user": "npm run docker:up && cross-env WORKFLOW=multisig-single-user.yaml CONFIGURATION=configuration-multisig-single-user.json jest test/run-workflow.test.ts && npm run docker:down",
