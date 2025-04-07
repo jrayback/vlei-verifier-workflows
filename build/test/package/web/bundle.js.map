@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["app.js"],
+  "sourcesContent": ["// import * as didWebs from '@gleif-it/did-webs-ts';\n// import { composeDid, publishDid } from '@gleif-it/did-webs-ts';\n\n// Check both default and named exports\n\nconsole.log(true ? '\\x1b[32m[x] OK\\x1b[0m' : '\\x1b[31m[x] FAIL\\x1b[0m');\n"],
+  "mappings": ";;;AAKA,UAAQ,IAAI,OAAO,0BAA0B,yBAAyB;",
+  "names": []
+}

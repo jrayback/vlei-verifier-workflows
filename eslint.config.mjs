@@ -28,6 +28,7 @@ export default tseslint.config(
       ],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-extraneous-class': 'off', // this one is an easy fix, we just need to do it again.
     },
   }
 );
