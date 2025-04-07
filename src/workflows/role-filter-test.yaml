@@ -1,0 +1,144 @@
+workflow:
+  name: Role-Based Credential Filter Test
+  description: Test retrieving credentials by role
+  version: 1.0.0
+  steps:
+    # Create issuer client
+    create_issuer_client:
+      id: 'create_issuer_client'
+      type: 'create_client'
+      agent_name: 'issuer-agent'
+      secret: 'issuer-secret'
+      description: 'Create issuer client'
+
+    # Create recipient client
+    create_recipient_client:
+      id: 'create_recipient_client'
+      type: 'create_client'
+      agent_name: 'recipient-agent'
+      secret: 'recipient-secret'
+      description: 'Create recipient client'
+
+    # Create issuer AID
+    create_issuer_aid:
+      id: 'create_issuer_aid'
+      type: 'create_aid'
+      agent_name: 'issuer-agent'
+      aid: 'issuer-aid'
+      description: 'Create issuer AID'
+      depends: ['create_issuer_client']
+
+    # Create recipient AID
+    create_recipient_aid:
+      id: 'create_recipient_aid'
+      type: 'create_aid'
+      agent_name: 'recipient-agent'
+      aid: 'recipient-aid'
+      description: 'Create recipient AID'
+      depends: ['create_recipient_client']
+
+    # Create issuer registry
+    create_issuer_registry:
+      id: 'create_issuer_registry'
+      type: 'create_registry'
+      aid: 'issuer-aid'
+      description: 'Create registry for issuer'
+      depends: ['create_issuer_aid']
+
+    # Create recipient registry
+    create_recipient_registry:
+      id: 'create_recipient_registry'
+      type: 'create_registry'
+      aid: 'recipient-aid'
+      description: 'Create registry for recipient'
+      depends: ['create_recipient_aid']
+
+    # First credential with Role 1
+    issue_role1_credential:
+      id: 'issue_role1_credential'
+      type: 'issue_credential'
+      attributes:
+        personLegalName: 'Test User'
+        engagementContextRole: 'Role 1'
+      issuer_aid: 'issuer-aid'
+      issuee_aid: 'recipient-aid'
+      description: 'Issuer issues Role 1 credential to Recipient'
+      credential: 'issuer_to_recipient_role1'
+      depends: ['create_issuer_registry', 'create_recipient_registry']
+      verify_retrieval: true
+
+    # Verify first credential
+    verify_role1:
+      id: 'verify_role1'
+      type: 'vlei_verification'
+      description: 'Verifying Role 1 credential for recipient-aid'
+      actions:
+        present:
+          credential: 'issue_role1_credential'
+          type: 'credential_presentation'
+          expected_status: 'cred_crypt_valid'
+        authorize:
+          aid: 'recipient-aid'
+          type: 'credential_authorization'
+          expected_status: 'cred_verified'
+      depends: ['issue_role1_credential']
+
+    # Second credential with Role 2
+    issue_role2_credential:
+      id: 'issue_role2_credential'
+      type: 'issue_credential'
+      attributes:
+        personLegalName: 'Test User'
+        engagementContextRole: 'Role 2'
+      issuer_aid: 'issuer-aid'
+      issuee_aid: 'recipient-aid'
+      description: 'Issuer issues Role 2 credential to Recipient'
+      credential: 'issuer_to_recipient_role2'
+      depends: ['verify_role1']
+      verify_retrieval: true
+
+    # Verify second credential
+    verify_role2:
+      id: 'verify_role2'
+      type: 'vlei_verification'
+      description: 'Verifying Role 2 credential for recipient-aid'
+      actions:
+        present:
+          credential: 'issue_role2_credential'
+          type: 'credential_presentation'
+          expected_status: 'cred_crypt_valid'
+        authorize:
+          aid: 'recipient-aid'
+          type: 'credential_authorization'
+          expected_status: 'cred_verified'
+      depends: ['issue_role2_credential']
+
+    # Third credential with Role 3
+    issue_role3_credential:
+      id: 'issue_role3_credential'
+      type: 'issue_credential'
+      attributes:
+        personLegalName: 'Test User'
+        engagementContextRole: 'Role 3'
+      issuer_aid: 'issuer-aid'
+      issuee_aid: 'recipient-aid'
+      description: 'Issuer issues Role 3 credential to Recipient'
+      credential: 'issuer_to_recipient_role3'
+      depends: ['verify_role2']
+      verify_retrieval: true
+
+    # Verify third credential
+    verify_role3:
+      id: 'verify_role3'
+      type: 'vlei_verification'
+      description: 'Verifying Role 3 credential for recipient-aid'
+      actions:
+        present:
+          credential: 'issue_role3_credential'
+          type: 'credential_presentation'
+          expected_status: 'cred_crypt_valid'
+        authorize:
+          aid: 'recipient-aid'
+          type: 'credential_authorization'
+          expected_status: 'cred_verified'
+      depends: ['issue_role3_credential']

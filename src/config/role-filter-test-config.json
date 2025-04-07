@@ -1,0 +1,121 @@
+{
+  "secrets": {
+    "issuer-secret": "IssuerSecretKeyABCDEF123456",
+    "recipient-secret": "RecipientSecretKeyABCDEF123456"
+  },
+  "agents": {
+    "issuer-agent": {
+      "secret": "issuer-secret"
+    },
+    "recipient-agent": {
+      "secret": "recipient-secret"
+    }
+  },
+  "identifiers": {
+    "issuer-aid": {
+      "type": "singlesig",
+      "agent": "issuer-agent",
+      "group": "",
+      "name": "issuer-aid"
+    },
+    "recipient-aid": {
+      "type": "singlesig",
+      "agent": "recipient-agent",
+      "group": "",
+      "name": "recipient-aid"
+    }
+  },
+  "credentialsInfo": {
+    "issuer_to_recipient_role1": {
+      "schema": "ECr_ozy-IcTA0T4xGxcyqe6zQ9_2rNs1v3IPXybbR6wE",
+      "schemaType": "LEI-ECR-Role1"
+    },
+    "issuer_to_recipient_role2": {
+      "schema": "ECr_ozy-IcTA0T4xGxcyqe6zQ9_2rNs1v3IPXybbR6wE",
+      "schemaType": "LEI-ECR-Role2"
+    },
+    "issuer_to_recipient_role3": {
+      "schema": "ECr_ozy-IcTA0T4xGxcyqe6zQ9_2rNs1v3IPXybbR6wE",
+      "schemaType": "LEI-ECR-Role3"
+    }
+  },
+  "credentials": {
+    "issuer_to_recipient_role1": {
+      "credSource": {
+        "type": "issuer",
+        "aid": "issuer-aid"
+      },
+      "schema": "https://example.org/schema/credential/1.0.0",
+      "rules": "https://example.org/rules/credential/1.0.0",
+      "privacy": false,
+      "attributes": {
+        "engagementContextRole": "Role 1"
+      }
+    },
+    "issuer_to_recipient_role2": {
+      "credSource": {
+        "type": "issuer",
+        "aid": "issuer-aid"
+      },
+      "schema": "https://example.org/schema/credential/1.0.0",
+      "rules": "https://example.org/rules/credential/1.0.0",
+      "privacy": false,
+      "attributes": {
+        "engagementContextRole": "Role 2"
+      }
+    },
+    "issuer_to_recipient_role3": {
+      "credSource": {
+        "type": "issuer",
+        "aid": "issuer-aid"
+      },
+      "schema": "https://example.org/schema/credential/1.0.0",
+      "rules": "https://example.org/rules/credential/1.0.0",
+      "privacy": false,
+      "attributes": {
+        "engagementContextRole": "Role 3"
+      }
+    }
+  },
+  "urls": {},
+  "schemas": {
+    "https://example.org/schema/credential/1.0.0": "ECr_ozy-IcTA0T4xGxcyqe6zQ9_2rNs1v3IPXybbR6wE",
+    "ECr_ozy-IcTA0T4xGxcyqe6zQ9_2rNs1v3IPXybbR6wE": {
+      "type": "schema",
+      "value": {
+        "$id": "ECr_ozy-IcTA0T4xGxcyqe6zQ9_2rNs1v3IPXybbR6wE",
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Test Credential",
+        "description": "Test credential with role",
+        "type": "object",
+        "properties": {
+          "personLegalName": {
+            "type": "string",
+            "description": "Person's legal name"
+          },
+          "engagementContextRole": {
+            "type": "string",
+            "description": "Role of the credential holder"
+          }
+        },
+        "required": ["personLegalName", "engagementContextRole"]
+      }
+    }
+  },
+  "schemaConfigs": {},
+  "rules": {
+    "https://example.org/rules/credential/1.0.0": {}
+  },
+  "entities": [
+    {
+      "type": "ISSUER",
+      "alias": "issuer",
+      "identifiers": ["issuer-aid"]
+    },
+    {
+      "type": "RECIPIENT",
+      "alias": "recipient",
+      "identifiers": ["recipient-aid"]
+    }
+  ]
+}

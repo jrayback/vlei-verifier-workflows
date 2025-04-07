@@ -1,0 +1,236 @@
+workflow:
+  name: Multiple Credentials to Same AID Test
+  description: Tests if multiple credentials can be issued to the same AID
+  config: multiple-creds-same-aid-config
+  steps:
+    # Client creation steps
+    gleif_client:
+      id: 'gleif_client'
+      type: 'create_client'
+      agent_name: 'gleif-agent-1'
+      description: 'Creating client for GLEIF agent'
+
+    qvi_client:
+      id: 'qvi_client'
+      type: 'create_client'
+      agent_name: 'qvi-agent-1'
+      description: 'Creating client for QVI agent'
+      depends: ['gleif_client']
+
+    le_client:
+      id: 'le_client'
+      type: 'create_client'
+      agent_name: 'le-agent-1'
+      description: 'Creating client for LE agent'
+      depends: ['qvi_client']
+
+    ecr_client:
+      id: 'ecr_client'
+      type: 'create_client'
+      agent_name: 'ecr-agent-1'
+      description: 'Creating client for ECR agent'
+      depends: ['le_client']
+
+    # AID creation steps
+    gleif_aid:
+      id: 'gleif_aid'
+      type: 'create_aid'
+      aid: 'gleif-aid-1'
+      description: 'Creating AID: gleif-aid-1'
+      depends: ['gleif_client']
+
+    qvi_aid:
+      id: 'qvi_aid'
+      type: 'create_aid'
+      aid: 'qvi-aid-1'
+      description: 'Creating AID: qvi-aid-1'
+      depends: ['qvi_client', 'gleif_aid']
+
+    le_aid:
+      id: 'le_aid'
+      type: 'create_aid'
+      aid: 'le-aid-1'
+      description: 'Creating AID: le-aid-1'
+      depends: ['le_client', 'qvi_aid']
+
+    ecr_aid:
+      id: 'ecr_aid'
+      type: 'create_aid'
+      aid: 'ecr-aid-1'
+      description: 'Creating AID: ecr-aid-1'
+      depends: ['ecr_client', 'le_aid']
+
+    # Registry creation steps
+    gleif_registry:
+      id: 'gleif_registry'
+      type: 'create_registry'
+      aid: 'gleif-aid-1'
+      description: 'Creating registry for gleif-aid-1'
+      depends: ['gleif_aid']
+
+    qvi_registry:
+      id: 'qvi_registry'
+      type: 'create_registry'
+      aid: 'qvi-aid-1'
+      description: 'Creating registry for qvi-aid-1'
+      depends: ['qvi_aid']
+
+    le_registry:
+      id: 'le_registry'
+      type: 'create_registry'
+      aid: 'le-aid-1'
+      description: 'Creating registry for le-aid-1'
+      depends: ['le_aid']
+
+    ecr_registry:
+      id: 'ecr_registry'
+      type: 'create_registry'
+      aid: 'ecr-aid-1'
+      description: 'Creating registry for ecr-aid-1'
+      depends: ['ecr_aid']
+
+    # Root of Trust setup
+    add_root_of_trust:
+      id: 'add_root_of_trust'
+      type: 'add_root_of_trust'
+      rot_aid: 'gleif-aid-1'
+      description: 'Adding GLEIF as Root of Trust'
+      depends: ['gleif_registry']
+
+    # Credential issuance steps
+    qvi_cred:
+      id: 'qvi_cred'
+      type: 'issue_credential'
+      attributes:
+        LEI: '254900OPPU84GM83MG36'
+      issuer_aid: 'gleif-aid-1'
+      issuee_aid: 'qvi-aid-1'
+      description: 'GLEIF issues QVI vLEI credential'
+      credential: 'gleif_to_qvi_vlei_cred'
+      depends: ['add_root_of_trust', 'qvi_registry']
+
+    le_cred:
+      id: 'le_cred'
+      type: 'issue_credential'
+      attributes:
+        LEI: '875500ELOZEL05BVXV37'
+      issuer_aid: 'qvi-aid-1'
+      issuee_aid: 'le-aid-1'
+      description: 'QVI issues LE vLEI credential'
+      credential: 'qvi_to_le_vlei_cred'
+      credential_source: 'qvi_cred'
+      depends: ['qvi_cred', 'le_registry']
+
+    # First credential to ECR-AID-1
+    ecr_role1:
+      id: 'ecr_role1'
+      type: 'issue_credential'
+      attributes:
+        personLegalName: 'Employee User'
+        LEI: '875500ELOZEL05BVXV37'
+      issuer_aid: 'le-aid-1'
+      issuee_aid: 'ecr-aid-1'
+      description: 'LE issues Employee Role 1 credential to ECR'
+      credential: 'le_to_ecr_role1'
+      credential_source: 'le_cred'
+      depends: ['le_cred', 'ecr_registry']
+
+    verify_role1_filter:
+      id: 'verify_role1_filter'
+      type: 'verify_credential_filter'
+      credential_id: 'ecr_role1'
+      expected_role: 'Employee Role 1'
+      description: 'Verify correct role credential was retrieved'
+      depends: ['ecr_role1']
+
+    # Verify first credential
+    verify_role1:
+      id: 'verify_role1'
+      type: 'vlei_verification'
+      description: 'Verifying Employee Role 1 credential for ecr-aid-1'
+      actions:
+        present:
+          credential: 'ecr_role1'
+          type: 'credential_presentation'
+          expected_status: 'cred_crypt_valid'
+        authorize:
+          aid: 'ecr-aid-1'
+          type: 'credential_authorization'
+          expected_status: 'cred_verified'
+      depends: ['verify_role1_filter']
+
+    # Second credential to ECR-AID-1
+    ecr_role2:
+      id: 'ecr_role2'
+      type: 'issue_credential'
+      attributes:
+        personLegalName: 'Employee User'
+        LEI: '875500ELOZEL05BVXV37'
+      issuer_aid: 'le-aid-1'
+      issuee_aid: 'ecr-aid-1'
+      description: 'LE issues Employee Role 2 credential to ECR'
+      credential: 'le_to_ecr_role2'
+      credential_source: 'le_cred'
+      depends: ['verify_role1']
+
+    verify_role2_filter:
+      id: 'verify_role2_filter'
+      type: 'verify_credential_filter'
+      credential_id: 'ecr_role2'
+      expected_role: 'Employee Role 2'
+      description: 'Verify correct role credential was retrieved'
+      depends: ['ecr_role2']
+
+    # Verify second credential
+    verify_role2:
+      id: 'verify_role2'
+      type: 'vlei_verification'
+      description: 'Verifying Employee Role 2 credential for ecr-aid-1'
+      actions:
+        present:
+          credential: 'ecr_role2'
+          type: 'credential_presentation'
+          expected_status: 'cred_crypt_valid'
+        authorize:
+          aid: 'ecr-aid-1'
+          type: 'credential_authorization'
+          expected_status: 'cred_verified'
+      depends: ['verify_role2_filter']
+
+    # Third credential to ECR-AID-1
+    ecr_role3:
+      id: 'ecr_role3'
+      type: 'issue_credential'
+      attributes:
+        personLegalName: 'Employee User'
+        LEI: '875500ELOZEL05BVXV37'
+      issuer_aid: 'le-aid-1'
+      issuee_aid: 'ecr-aid-1'
+      description: 'LE issues Employee Role 3 credential to ECR'
+      credential: 'le_to_ecr_role3'
+      credential_source: 'le_cred'
+      depends: ['verify_role2']
+
+    verify_role3_filter:
+      id: 'verify_role3_filter'
+      type: 'verify_credential_filter'
+      credential_id: 'ecr_role3'
+      expected_role: 'Employee Role 3'
+      description: 'Verify correct role credential was retrieved'
+      depends: ['ecr_role3']
+
+    # Verify third credential
+    verify_role3:
+      id: 'verify_role3'
+      type: 'vlei_verification'
+      description: 'Verifying Employee Role 3 credential for ecr-aid-1'
+      actions:
+        present:
+          credential: 'ecr_role3'
+          type: 'credential_presentation'
+          expected_status: 'cred_crypt_valid'
+        authorize:
+          aid: 'ecr-aid-1'
+          type: 'credential_authorization'
+          expected_status: 'cred_verified'
+      depends: ['verify_role3_filter']
