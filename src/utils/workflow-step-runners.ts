@@ -90,9 +90,11 @@ export class IssueCredentialStepRunner extends StepRunner {
       step.test_name
     );
 
+    // If verify_retrieval is true, verify role-based credential retrieval
     if (step.verify_retrieval) {
       console.log(`Verifying role-based credential retrieval...`);
 
+      // Determine the role from the credential
       const role =
         result.cred.sad.a.engagementContextRole ||
         result.cred.sad.a.officialRole;
@@ -104,6 +106,7 @@ export class IssueCredentialStepRunner extends StepRunner {
 
       console.log(`Attempting to retrieve credential by role: "${role}"`);
 
+      // Try to retrieve the credential by role
       const retrievedCred = await getIssuedCredential(
         step.issuer_aid,
         step.issuee_aid,

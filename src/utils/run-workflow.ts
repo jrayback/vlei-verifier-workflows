@@ -1,67 +1,102 @@
+import { Workflow } from '../types/workflow.js';
 import { WorkflowState } from '../workflow-state.js';
 
 import {
-  IssueCredentialStepRunner,
-  NotifyCredentialIssueeStepRunner,
-  RevokeCredentialStepRunner,
   StepRunner,
+  ISSUE_CREDENTIAL,
+  REVOKE_CREDENTIAL,
+  NOTIFY_CREDENTIAL_ISSUEE,
+  VLEI_VERIFICATION,
+  CREATE_CLIENT,
+  CREATE_AID,
+  CREATE_REGISTRY,
+  ADD_ROOT_OF_TRUST,
+  IssueCredentialStepRunner,
+  RevokeCredentialStepRunner,
+  NotifyCredentialIssueeStepRunner,
   VleiVerificationStepRunner,
   CreateClientStepRunner,
   CreateAidStepRunner,
   CreateRegistryStepRunner,
   AddRootOfTrustStepRunner,
-  VerifyCredentialFilterStepRunner,
-} from './workflow-step-runners.js';
+} from '../step-runners/index.js';
 
 export class WorkflowRunner {
   stepRunners: Map<string, StepRunner> = new Map<string, StepRunner>();
-  configJson: any;
-  workflow: any;
-  executedSteps = new Set();
+  config: any;
+  workflow: Workflow;
+  environmentContext: any;
+  agentContext: any;
+  executedSteps = new Set<string>();
 
-  constructor(workflow: any, configJson: any) {
-    this.configJson = configJson;
+  constructor(
+    workflow: Workflow,
+    config: any,
+    environmentContext: any,
+    agentContext: any
+  ) {
+    this.config = config;
     this.workflow = workflow;
-    WorkflowState.getInstance(this.configJson);
+    this.environmentContext = environmentContext;
+    this.agentContext = agentContext;
+    WorkflowState.getInstance(this.config);
     this.registerPredefinedRunners();
   }
 
-  private registerPredefinedRunners() {
-    this.registerRunner('create_client', new CreateClientStepRunner());
-    this.registerRunner('create_aid', new CreateAidStepRunner());
-    this.registerRunner('create_registry', new CreateRegistryStepRunner());
-    this.registerRunner('issue_credential', new IssueCredentialStepRunner());
-    this.registerRunner('revoke_credential', new RevokeCredentialStepRunner());
-    this.registerRunner('add_root_of_trust', new AddRootOfTrustStepRunner());
+  private registerPredefinedRunners(): void {
+    this.registerRunner(CREATE_CLIENT, new CreateClientStepRunner());
+    this.registerRunner(CREATE_AID, new CreateAidStepRunner());
+    this.registerRunner(CREATE_REGISTRY, new CreateRegistryStepRunner());
+    this.registerRunner(ISSUE_CREDENTIAL, new IssueCredentialStepRunner());
+    this.registerRunner(REVOKE_CREDENTIAL, new RevokeCredentialStepRunner());
+    this.registerRunner(ADD_ROOT_OF_TRUST, new AddRootOfTrustStepRunner());
     this.registerRunner(
-      'notify_credential_issuee',
+      NOTIFY_CREDENTIAL_ISSUEE,
       new NotifyCredentialIssueeStepRunner()
     );
-    this.registerRunner('vlei_verification', new VleiVerificationStepRunner());
-    this.registerRunner(
-      'verify_credential_filter',
-      new VerifyCredentialFilterStepRunner()
-    );
+    this.registerRunner(VLEI_VERIFICATION, new VleiVerificationStepRunner());
   }
 
-  public registerRunner(name: string, runner: StepRunner) {
-    this.stepRunners.set(name, runner);
+  public registerRunner(type: string, runner: StepRunner): void {
+    this.stepRunners.set(type, runner);
   }
 
-  public async runWorkflow() {
-    for (const [stepName, step] of Object.entries(
-      this.workflow.workflow.steps
-    ) as any[]) {
-      console.log(`Executing: ${step.description}`);
-      const runner = this.stepRunners.get(step.type);
-      if (!runner) {
-        console.log(`No step runner was registered for step '${step.type}'`);
-        return false;
+  public async runWorkflow(): Promise<boolean> {
+    try {
+      const steps = this.workflow.workflow.steps;
+      for (const [stepName, step] of Object.entries(steps)) {
+        try {
+          console.log(`Executing: ${step.description || stepName}`);
+
+          const stepType = step.type;
+          const stepRunner = this.stepRunners.get(stepType);
+
+          if (!stepRunner) {
+            const errorMsg = `No step runner registered for step type: ${stepType}`;
+            console.error(`❌ ERROR in step "${stepName}": ${errorMsg}`);
+            throw new Error(errorMsg);
+          }
+
+          await stepRunner.run(stepName, step, this.config);
+          this.executedSteps.add(stepName);
+          console.log(`✅ Successfully completed step: ${stepName}`);
+        } catch (error) {
+          // Instead of swallowing the error, print it clearly and rethrow
+          console.error(`❌ ERROR in step "${stepName}":`);
+          console.error(error);
+
+          // Optionally print the step details for debugging
+          console.error(`Step details:`, JSON.stringify(step, null, 2));
+
+          // Rethrow to stop workflow execution
+          throw error;
+        }
       }
-      await runner.run(stepName, step, this.configJson);
-      this.executedSteps.add(step.id);
+      return true;
+    } catch (error) {
+      console.error('❌ Workflow execution failed:');
+      console.error(error);
+      return false;
     }
-    console.log(`Workflow steps execution finished successfully`);
-    return true;
   }
 }
