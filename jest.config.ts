@@ -1,6 +1,6 @@
-import { Config } from 'jest';
+import type { Config } from '@jest/types';
 
-const config: Config = {
+const config = {
   // need esm preset to support esm modules
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',

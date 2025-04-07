@@ -8,7 +8,7 @@ import { RULES, SCHEMAS, witnessIds } from './constants.js';
 
 export class WorkflowState {
   private static instance: WorkflowState;
-  configJson: any;
+  config: any;
   schemas: any = SCHEMAS;
   rules: any = RULES;
   clients = new Map<string, SignifyClient.SignifyClient>();
@@ -21,25 +21,22 @@ export class WorkflowState {
   kargsAID =
     witnessIds.length > 0 ? { toad: witnessIds.length, wits: witnessIds } : {};
 
-  private constructor(configJson: any) {
-    this.configJson = configJson;
-    this.credentialsInfo = buildCredentials(configJson);
+  private constructor(config: any) {
+    this.config = config;
+    this.credentialsInfo = buildCredentials(config);
   }
 
-  static getInstance(configJson: any = null): WorkflowState {
+  static getInstance(config = null): WorkflowState {
     if (!WorkflowState.instance) {
-      if (!configJson)
-        throw 'WorkflowState.getInstance: no configJson was provided';
-      WorkflowState.instance = new WorkflowState(configJson);
+      if (!config) throw 'WorkflowState.getInstance: no config was provided';
+      WorkflowState.instance = new WorkflowState(config);
     }
     return WorkflowState.instance;
   }
 
   static resetInstance() {
     if (WorkflowState.instance) {
-      WorkflowState.instance = new WorkflowState(
-        WorkflowState.instance.configJson
-      );
+      WorkflowState.instance = new WorkflowState(WorkflowState.instance.config);
     }
   }
 }

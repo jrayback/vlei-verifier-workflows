@@ -69,12 +69,14 @@ export class VleiVerification {
     credCesr: string,
     expected_status_code: number
   ) {
-    const verifierResponse = await this.verifierClient.login(said, credCesr);
-    assert.equal(verifierResponse.code, expected_status_code);
+    await this.verifierClient.login(said, credCesr).then((res) => {
+      assert.equal(res.code, expected_status_code);
+    });
   }
 
   private async authorization(aidPrefix: string, expected_status_code: number) {
-    const verifierResponse = await this.verifierClient.checkLogin(aidPrefix);
-    assert.equal(verifierResponse.code, expected_status_code);
+    await this.verifierClient.checkLogin(aidPrefix).then((res) => {
+      assert.equal(res.code, expected_status_code);
+    });
   }
 }

@@ -1,21 +1,32 @@
+// Replace individual imports with centralized imports
+import * as fsModule from 'fs';
+import * as yamlModule from 'js-yaml';
+import { Workflow } from '../types/workflow.js';
+
+// Import YAML library properly
 import SignifyClient from 'signify-ts';
-import * as fs from 'fs';
-import * as yaml from 'js-yaml';
 
 // Function to load and parse YAML file
-export function loadWorkflow(workflowFilePath: string) {
+export function loadWorkflow(filePath: string): Workflow {
   try {
-    const file = fs.readFileSync(workflowFilePath, 'utf8');
-    return yaml.load(file);
+    const fs = fsModule;
+    const yaml = yamlModule;
+
+    const fileContents = fs.readFileSync(filePath, 'utf8');
+    return yaml.load(fileContents) as Workflow;
   } catch (e) {
-    console.error('Error reading YAML file:', e);
-    return null;
+    throw new Error(`Error reading YAML file: ${e}`);
   }
 }
 
-export function getConfig(configFilePath: string) {
-  const configJson = JSON.parse(fs.readFileSync(configFilePath, 'utf-8'));
-  return configJson;
+export function getConfig(configPath: string): any {
+  try {
+    const fs = fsModule;
+    const fileContents = fs.readFileSync(configPath, 'utf8');
+    return JSON.parse(fileContents);
+  } catch (e) {
+    throw new Error(`Error reading config file: ${e}`);
+  }
 }
 
 export async function getGrantedCredential(
