@@ -10,12 +10,7 @@ import {
   getIdentifierData,
   SinglesigIdentifierData,
 } from './handle-json-config.js';
-import {
-  ECR_SCHEMA_URL,
-  OOR_SCHEMA_URL,
-  ECR_SCHEMA_SAID,
-  OOR_SCHEMA_SAID,
-} from '../constants.js';
+import { ECR_SCHEMA_SAID, OOR_SCHEMA_SAID } from '../constants.js';
 
 export interface Aid {
   name: string;
